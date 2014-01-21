@@ -23,4 +23,5 @@
 <use name="root"/>
 <library file="*.cc" name="ValidationRecoBPlugins">
   <flags EDM_PLUGIN="1"/>
+  <flags CXXFLAGS="-g"/>
 </library>

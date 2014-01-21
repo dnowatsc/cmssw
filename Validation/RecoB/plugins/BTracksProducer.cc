@@ -72,6 +72,30 @@ using namespace std;
 using namespace edm;
 #include "DataFormats/GeometryVector/interface/VectorUtil.h"
 
+namespace {
+  
+  bool isBHadron(int pdgId) {
+    if ( (abs(pdgId) > 500 && abs(pdgId) < 600) || (abs(pdgId) > 5000 && abs(pdgId) < 6000)) return true;
+    else return false;
+  }
+  
+  bool isFromB(HepMC::GenParticle* p, int max_depth) {
+    if ( max_depth < 0 ) {
+      std::cout << "WARNING! LOOP DETECTED!!" << endl;
+      return false;
+    }
+    HepMC::GenVertex* prod_vertex = p->production_vertex();
+    if (prod_vertex==0 || prod_vertex->particles_in_size() != 1)
+      return false;
+    else {
+      HepMC::GenParticle* part_in = *prod_vertex->particles_in_const_begin();
+      if ( isBHadron(part_in->pdg_id()) ) return true;
+      else return isFromB (part_in, max_depth-1);
+    }
+  }
+  
+}
+
 class BTracksProducer : public edm::EDProducer
 {
 
@@ -174,11 +198,12 @@ void BTracksProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
 	     		
 	if (trackclassifier_.is(TrackCategories::Fake) ) {
-	  std::cout<<trkID.key()<< " is fake" << std::endl;  	
+// 	  std::cout<<trkID.key()<< " is fake" << std::endl;  	
 	  fakeTracks->push_back(*trkID);
 	}
         else
         {
+// 	  	(DONE) INSERT CHECK IF SIMPARTICLE HERE!!! OR USE CODE BELOW FOR OWN MODULE
 		TrackingParticleRef trackingParticle=trackclassifier_.history().simParticle();
                 allTP->push_back(*trackingParticle);
                  for( TrackingParticle::g4t_iterator g4T=(*trackingParticle).g4Track_begin(); g4T != (*trackingParticle).g4Track_end(); ++g4T ){
@@ -187,7 +212,7 @@ void BTracksProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
 	}
 	if( trackclassifier_.is(TrackCategories::Bottom)){
-	  std::cout<<trkID.key()<< " is B" << trackclassifier_.is(TrackCategories::BWeakDecay) << std::endl;  	
+// 	  std::cout<<trkID.key()<< " is B" << trackclassifier_.is(TrackCategories::BWeakDecay) << std::endl;  	
 	  bTracks->push_back(*trkID);
 
 	}
@@ -234,7 +259,7 @@ void BTracksProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
 	 if(!trackclassifier_.is(TrackCategories::Reconstructed) && (trackclassifier_.is(TrackCategories::Bottom) || trackclassifier_.is(TrackCategories::BWeakDecay) ) )
           {
-		std::cout << "Missing SimTrackID: " << g4T->trackId()  << " TP index " << index << " GenParticleID " << g4T->genpartIndex() << std::endl;
+// 		std::cout << "Missing SimTrackID: " << g4T->trackId()  << " TP index " << index << " GenParticleID " << g4T->genpartIndex() << std::endl;
 		bNotReconstructedTP->push_back(*trackingParticle);
 	        bNotReconstructedST->push_back(*g4T);
 // 	        bNotReconstructedGP->push_back(*evt->barcode_to_particle( g4T->genpartIndex() ));

@@ -24,6 +24,17 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
 
+//==============================================================================================================================================================
+//==============================================================================================================================================================
+// CHECKS WHETHER A SET OF RECONSTRUCTED SECONDARY VERTICES SHARE ANY TRACKS HAVING A WEIGHT ABOVE 0.5 (WEIGHT WITH WHICH TRACK HAS CONTRIBUTED TO VERTEX FIT)
+// WITH A SET OF PRIMARY VERTICES (ONLY IF THEY HAVE A WEIGHT IN THE PRIMARY VERTEX OF ABOVE 0.5 AS WELL) AND KEEPS THOSE THAT DON'T
+// >>> IN THIS CASE THE PRIMARY VERTICES ARE VERTICES THAT ARE IDENTIFIED AS ORIGINATING FROM NUCLEAR INTERACTIONS, THE SECONDARY VERTICES ARE ALL RECONSTRUCTED
+// SECONDARY VERTICES SO IT EFFECTIVELY REMOVES ALL VERTICES THAT ARE ASSOCIATED WITH NUCLEAR INTERACTIONS
+//==============================================================================================================================================================
+//==============================================================================================================================================================
+
+
+
 class VertexCleaner : public edm::EDProducer {
     public:
 	VertexCleaner(const edm::ParameterSet &params);

@@ -78,6 +78,7 @@ void NuclearInteractionIdentifier::produce(edm::Event &event, const edm::EventSe
         event.getByLabel(beamSpotCollection, beamSpot);
 
         for(unsigned int ivtx=0; ivtx < theSecVertexColl.size(); ivtx++){
+// 	  	std::cout << "test0" << std::endl;
 	       const reco::Vertex & sv = theSecVertexColl[ivtx];	
 	       float mass=sv.p4().M();
 	       float pt=sv.p4().Pt();
@@ -85,19 +86,19 @@ void NuclearInteractionIdentifier::produce(edm::Event &event, const edm::EventSe
                GlobalPoint ppv(pv.position().x(),pv.position().y(),pv.position().z());
                GlobalPoint ssv(sv.position().x(),sv.position().y(),sv.position().z());
                GlobalVector flightDir = ssv-ppv;
-	       float flightDistance2D = flightDir.perp(); 
+	       float flightDistance2D = flightDir.perp(); // transverse direction i.e. projection onto rho-phi-plane
 	       unsigned int ntracks = sv.nTracks();
 	       float z=sv.position().z();
-	       float nctau=flightDistance2D/transverseBoost/0.05;  //number of c*taus
-	       float nctauK=flightDistance2D/transverseBoost/2.68;  //number of c*taus
+	       float nctau=flightDistance2D/transverseBoost/0.05;  //number of c*taus  <== ?????????????????
+	       float nctauK=flightDistance2D/transverseBoost/2.68;  //number of c*taus  <== ????????????????? ==> 2.68 is flight length of kauon K-short in cm -> nctauK is number of K0 flight lengths in proper time of the particle (converted by dividing by transverseBoost which is measure for velocity of particle) so it gives a confidence level for the probability that the particle is NOT a K0 (if nctauK is very big than it's quite unlikely to be a K0 also if it's very low)
                const reco::Vertex & extVertex = sv;
                GlobalVector vtxDir = GlobalVector(extVertex.p4().X(),extVertex.p4().Y(),extVertex.p4().Z());
 	       float deltaR = Geom::deltaR(extVertex.position() - pv.position(), vtxDir);
-               std::cout << "Vtx id: " << ivtx <<" z: " << fabs(z) << " fdist: " << flightDistance2D << " nctau: " << nctau << " ntr: " << ntracks << " mass: " << mass << " nctauK: " << nctauK << " DR: " << deltaR << " charge prod: "<< (*sv.tracks_begin())->charge()*((*(sv.tracks_begin()+1))->charge()) << std::endl;
+//                std::cout << "Vtx id: " << ivtx <<" z: " << fabs(z) << " fdist: " << flightDistance2D << " nctau: " << nctau << " ntr: " << ntracks << " mass: " << mass << " nctauK: " << nctauK << " DR: " << deltaR << " charge prod: "<< (*sv.tracks_begin())->charge()*((*(sv.tracks_begin()+1))->charge()) << std::endl;
 	       if( (fabs(z) < 29 &&  flightDistance2D > 2.5 && nctau > 3 )			
                    or (fabs(z) < 29 &&  flightDistance2D > 2.0 && nctau > 5 && ntracks > 2 )
-                   or (fabs(z) < 29 &&  flightDistance2D > 2.5 && flightDistance2D < 4 && nctau > 2 && ntracks >= 6 && mass > 4.2)
-		   or (fabs(mass-0.497) < 0.0150 && ntracks == 2 && (*sv.tracks_begin())->charge()*((*(sv.tracks_begin()+1))->charge()) <0 && nctauK < 2 && nctauK > 0.01 && deltaR < 0.01) // K0... TODO: check also opposite sign
+                   or (fabs(z) < 29 &&  flightDistance2D > 2.5 && flightDistance2D < 4 && nctau > 2 && ntracks >= 6 && mass > 4.2) // check for Nuclear Interaction??
+		   or (fabs(mass-0.497) < 0.0150 && ntracks == 2 && (*sv.tracks_begin())->charge()*((*(sv.tracks_begin()+1))->charge()) <0 && nctauK < 2 && nctauK > 0.01 && deltaR < 0.01) // check if it is K0... TODO: check also opposite sign
 			) {
  			std::cout << "NI " << std::endl;
 		       recoVertices->push_back(theSecVertexColl[ivtx]);

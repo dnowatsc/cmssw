@@ -24,6 +24,18 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
 
+//===============================================================================================================================================================
+//===============================================================================================================================================================
+// CHECKS WHETHER A SET OF RECONSTRUCTED TRACK BELONGS TO A VERTEX OUT OF A GIVEN SET OF VERTICES (IF IT CONTRIBUTED TO THIS VERTEX WITH A WEIGHT >0.5) AND KEEPS
+// THOSE THAT DON'T
+// >>> IN THIS CASE VERTICES ARE VERTICES THAT ARE IDENTIFIED AS ORIGINATING FROM NUCLEAR INTERACTIONS SO IT EFFECTIVELY REMOVES ALL TRACKS FROM THESE VERTICES
+//===============================================================================================================================================================
+//===============================================================================================================================================================
+
+
+
+
+
 class TrackCollectionCleaner : public edm::EDProducer {
     public:
 	TrackCollectionCleaner(const edm::ParameterSet &params);
