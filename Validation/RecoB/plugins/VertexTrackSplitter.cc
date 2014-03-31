@@ -52,6 +52,7 @@ for(size_t i=0;i<maxVertices_;i++)
   stringstream str;
   str << "vertex" << i ;	
   produces<reco::TrackCollection>(str.str().c_str());
+  produces<std::vector<reco::Vertex> >(str.str().c_str());
  }
 }
 
@@ -67,24 +68,29 @@ void VertexTrackSplitter::produce(edm::Event& event, const edm::EventSetup& setu
    const std::vector<reco::Vertex> & vertices = *(verticesH.product());
    
    auto_ptr<reco::TrackCollection> tracks[maxVertices_];
+   auto_ptr<std::vector<reco::Vertex> > vertexOutput[maxVertices_];
    for(size_t i=0;i<maxVertices_;i++)
    {
       tracks[i].reset(new reco::TrackCollection);
+      vertexOutput[i].reset(new std::vector<reco::Vertex>);
    }
    
    for(unsigned int  iv = 0; iv < vertices.size() && iv < maxVertices_ ; ++iv)
     {
+	  vertexOutput[iv]->push_back(vertices[iv]);
 	  for(reco::Vertex::trackRef_iterator it= vertices[iv].tracks_begin();it!= vertices[iv].tracks_end();it++)
           {
 	   tracks[iv]->push_back(**it);
    	  }
    }
- for(size_t i=0;i<maxVertices_;i++)
- {
-  stringstream str;
-  str << "vertex" << i ;
-  event.put(tracks[i], str.str().c_str());
- }
+   
+   for(size_t i=0;i<maxVertices_;i++)
+   {
+       stringstream str;
+       str << "vertex" << i ;
+       event.put(tracks[i], str.str().c_str());
+       event.put(vertexOutput[i], str.str().c_str());
+   }
 
 }
 

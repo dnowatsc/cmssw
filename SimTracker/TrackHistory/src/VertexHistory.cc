@@ -65,12 +65,32 @@ void VertexHistory::newEvent (
         // Get the track associator
         edm::ESHandle<VertexAssociatorBase> vertexAssociator;
         setup.get<VertexAssociatorRecord>().get(vertexAssociator_, vertexAssociator);
+	
+	//! MODIFICATION: create RefToBaseVector from the daughter tracks of the SVs and RefVector from the TrackingParticleCollection as input for the trackAssociator
+	//! QUESTION: what's the difference between a TrackRef (edm::Ref<TrackCollection>) and a RefVector (edm::RefVector<TrackCollection>)
+	
+	edm::RefToBaseVector<reco::Track> recoSVTracks;	
+	for (edm::View<reco::Vertex>::const_iterator iVertex = vertexCollection->begin(); iVertex != vertexCollection->end(); ++iVertex)
+	{
+	  for (reco::Vertex::trackRef_iterator iDaughter = iVertex->tracks_begin(); iDaughter != iVertex->tracks_end(); ++iDaughter)
+	  {
+	    recoSVTracks.push_back(*iDaughter);
+	  }
+	}
+	
+	// create and fill RefVector from TrackingParticleCollection
+	edm::RefVector<TrackingParticleCollection> TPCollectionRefVector(TPCollection.id());
+	for (unsigned int j=0; j<TPCollection->size();j++)
+	  TPCollectionRefVector.push_back(edm::Ref<TrackingParticleCollection>(TPCollection,j));
 
         if ( enableRecoToSim_ )
         {
             // Get the map between recovertex -> simvertex
-            reco::RecoToSimCollection
-            trackRecoToSim = trackAssociator->associateRecoToSim(trackCollection, TPCollection, &event);
+            //! MODIFICATION: changed input of trackRecoToSim
+            reco::RecoToSimCollection trackRecoToSim = trackAssociator->associateRecoToSim(recoSVTracks, TPCollectionRefVector, &event);
+	    
+	    /// DEFAULT INPUT
+// 	    reco::RecoToSimCollection trackRecoToSim = trackAssociator->associateRecoToSim(recoSVTracks, TPCollectionRefVector, &event);
 
             // Calculate the map between recovertex -> simvertex
             recoToSim_ = vertexAssociator->associateRecoToSim(vertexCollection, TVCollection, event, trackRecoToSim);
@@ -95,10 +115,10 @@ bool VertexHistory::evaluate (reco::VertexBaseRef tv)
 
     if ( !enableRecoToSim_ ) return false;
 
-    std::pair<TrackingVertexRef, double> result =  match(tv, recoToSim_, bestMatchByMaxValue_);
+    std::pair<TrackingVertexRef, double> result =  match(tv, recoToSim_, bestMatchByMaxValue_);	/// where does 'match(...) function come from???
 
     TrackingVertexRef tvr( result.first );
-    quality_ = result.second;
+    quality_ = result.second;	/// double quality = (double)matchedDaughterCounter/simDaughterCounter; => # of recoDaughters that are matched to trackingParticles over the numer of simDaughters of the trackingVertex; 1 means that all reconstructed daughters of the recoVertex have a corresponding simTrack and thus the vertex is very well reconstructed
 
     if ( !tvr.isNull() )
     {

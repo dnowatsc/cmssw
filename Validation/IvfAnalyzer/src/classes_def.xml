@@ -1,0 +1,12 @@
+<lcgdict>
+<class name="TV"/>
+<class name="std::vector<double>"/>
+<class name="LorentzVector"/>
+<class name="GlobalVector"/>
+<class name="ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<Double32_t>,ROOT::Math::DefaultCoordinateSystemTag>"/>
+<class name="CovarianceMatrix"/>
+<class name="ROOT::Math::MatRepSym<double,3>"/>
+<class name="PV3DBase<float,VectorTag,GlobalTag>"/>
+<class name="Basic3DVector<float>"/>
+<class name="ROOT::Math::RowOffsets<3>"/>
+</lcgdict>

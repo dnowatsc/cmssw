@@ -85,10 +85,16 @@ reco::VertexRecoToSimCollection VertexAssociatorByTracks::associateRecoToSim(
             ++recoDaughter
         )
         {
+	  
+	  //! MODIFICATION: removed quality check for RecoDaughters
             // Check the quality of the RecoDoughters
-            if ( !(*recoDaughter)->quality(trackQuality_) ) continue;
+//             if ( !(*recoDaughter)->quality(trackQuality_) ) continue;
 
             // Check for association for the given RecoDaughter
+            
+            //! MODIFICATION: input cout statement
+            std::cout << "Association size: " << associator.numberOfAssociations(*recoDaughter) << std::endl << std::endl;
+            
             if ( associator.numberOfAssociations(*recoDaughter) > 0 )
             {
                 std::vector<std::pair<TrackingParticleRef,double> > associations = associator[*recoDaughter];

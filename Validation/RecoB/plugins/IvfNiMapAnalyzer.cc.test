@@ -1,0 +1,106 @@
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Utilities/interface/Exception.h"
+#include "Validation/RecoB/plugins/BTagPerformanceAnalyzerMC.h"
+#include "DQMOffline/RecoB/interface/JetTagPlotter.h"
+#include "DQMOffline/RecoB/interface/TagInfoPlotterFactory.h"
+#include "DataFormats/Common/interface/View.h"
+#include "DQMServices/Core/interface/DQMStore.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "DQMOffline/RecoB/interface/BaseBTagPlotter.h"
+#include "DataFormats/Common/interface/Ref.h"
+#include "DataFormats/JetReco/interface/Jet.h"
+#include "DataFormats/JetReco/interface/CaloJet.h"
+#include "DataFormats/BTauReco/interface/JetTag.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DQMOffline/RecoB/interface/BTagDifferentialPlot.h"
+#include "DQMOffline/RecoB/interface/AcceptJet.h"
+#include "DQMOffline/RecoB/interface/JetTagPlotter.h"
+#include "DQMOffline/RecoB/interface/TagCorrelationPlotter.h"
+#include "DQMOffline/RecoB/interface/BaseTagInfoPlotter.h"
+#include "DQMOffline/RecoB/interface/Tools.h"
+//#include "RecoBTag/MCTools/interface/JetFlavourIdentifier.h"
+//#include "RecoBTag/MCTools/interface/JetFlavour.h"
+#include "DataFormats/JetReco/interface/Jet.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
+#include "SimDataFormats/JetMatching/interface/JetFlavour.h"
+
+#include "DQMOffline/RecoB/interface/CorrectJet.h"
+#include "DQMOffline/RecoB/interface/MatchJet.h"
+
+
+
+#include <string>
+#include <vector>
+#include <map>
+
+using namespace reco;
+using namespace edm;
+using namespace std;
+using namespace RecoBTag;
+//using namespace BTagMCTools;
+
+
+
+//class CaloJetRef;
+
+/** \class BTagPerformanceAnalyzerMC
+ *
+ *  Top level steering routine for b tag performance analysis.
+ *
+ */
+
+class BTagPerformanceAnalyzerMC : public edm::EDAnalyzer {
+   public:
+      explicit BTagPerformanceAnalyzerMC(const edm::ParameterSet& pSet);
+
+      ~BTagPerformanceAnalyzerMC();
+
+      virtual void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+
+  virtual void endJob();
+
+   private:
+
+  // Get histogram plotting options from configuration.
+  void bookHistos(const edm::ParameterSet& pSet);
+  
+};
+
+BTagPerformanceAnalyzerMC::BTagPerformanceAnalyzerMC(const edm::ParameterSet& pSet) :
+  
+{
+}
+
+void BTagPerformanceAnalyzerMC::bookHistos(const edm::ParameterSet& pSet)
+{
+}
+
+
+
+BTagPerformanceAnalyzerMC::~BTagPerformanceAnalyzerMC()
+{
+}
+
+void BTagPerformanceAnalyzerMC::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  
+}
+
+
+
+void BTagPerformanceAnalyzerMC::endJob()
+{
+  
+}
+
+
+//define this as a plug-in
+DEFINE_FWK_MODULE(BTagPerformanceAnalyzerMC);

@@ -35,6 +35,14 @@ process.source = cms.Source("PoolSource",
 
 process.GlobalTag.globaltag = 'START53_V27::All'
 
+#=============FILTER TRACKS FROM PRIMARY VERTICES====================
+
+process.filteredTracks = cms.EDProducer("TrackPrimaryVertexFilter",
+	primaryVertices = cms.InputTag("offlinePrimaryVertices"),
+	tracks = cms.InputTag("generalTracks")
+)
+
+#===========CONFIGURE PERFORMANCE PLOTTER=========================
 
 process.bTagValidation.tagConfig.append(cms.PSet(
             parameters = cms.PSet(
@@ -54,7 +62,7 @@ process.bTagValidation.tagConfig.append(cms.PSet(
 process.CustombTagValidation = process.bTagValidation.clone(
     tagConfig = cms.VPSet(
         cms.PSet(
-	    parameters = cms.PSet(
+				    parameters = cms.PSet(
         			discriminatorStart = cms.double(-0.05),
         			discriminatorEnd = cms.double(1.05),
         			nBinEffPur = cms.int32(200),
@@ -91,18 +99,46 @@ process.CustombTagValidation = process.bTagValidation.clone(
                                 ),
             label = cms.InputTag("cleanedCombinedInclusiveSecondaryVertexBJetTags"),
             folder = cms.string("CSVIVF-NI")
+           ),
+       cms.PSet(
+            parameters = cms.PSet(
+                                discriminatorStart = cms.double(-0.05),
+                                discriminatorEnd = cms.double(1.05),
+                                nBinEffPur = cms.int32(200),
+                                # the constant b-efficiency for the differential plots versus pt and eta
+                                effBConst = cms.double(0.5),
+                                endEffPur = cms.double(1.005),
+                                startEffPur = cms.double(-0.005)
+                                ),
+                                label = cms.InputTag("cleanedCombinedInclusiveSecondaryVertexBJetTagsOwn"),
+            folder = cms.string("CSVIVF-NI-OWN")
+           ),      
+       cms.PSet(
+            parameters = cms.PSet(
+                                discriminatorStart = cms.double(-0.05),
+                                discriminatorEnd = cms.double(1.05),
+                                nBinEffPur = cms.int32(200),
+                                # the constant b-efficiency for the differential plots versus pt and eta
+                                effBConst = cms.double(0.5),
+                                endEffPur = cms.double(1.005),
+                                startEffPur = cms.double(-0.005)
+                                ),
+                                label = cms.InputTag("cleanedCombinedInclusiveSecondaryVertexBJetTagsNoPu"),
+            folder = cms.string("CSVIVF-NI-NOPU")
            )
 
        )
-
 
 )
 process.CustombTagValidation.ptRecJetMin = cms.double(20.0)
 process.CustombTagValidation.ptRanges = cms.vdouble(20, 30, 50.0, 80.0, 120.0,300, 600)
 
+
+#==============SET UP DEFAULT IVF==============================
+
 process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
 
-
+#==============SET UP ANDREA RIZZI'S NUCLEAR INTERACTION FINDER==============================
 
 process.nuclearInteractionIdentifier = cms.EDProducer("NuclearInteractionIdentifier",
      primaryVertices = cms.InputTag("offlinePrimaryVertices"),
@@ -120,6 +156,8 @@ process.trackCollectionCleaner = cms.EDProducer("TrackCollectionCleaner",
         vertices= cms.InputTag("nuclearInteractionIdentifier"),
         tracks = cms.InputTag("generalTracks")
 )
+
+
 process.ak5JetCleanedTracksAssociatorAtVertex = process.ak5JetTracksAssociatorAtVertex.clone()
 process.ak5JetCleanedTracksAssociatorAtVertex.tracks = cms.InputTag("trackCollectionCleaner")
 
@@ -150,12 +188,79 @@ process.cleanedCombinedInclusiveSecondaryVertexBJetTags = process.combinedInclus
                                  cms.InputTag("cleanedInclusiveSecondaryVertexFinderTagInfos"))
 )
 
+#==============SET UP OWN NUCLEAR INTERACTION FINDER==============================
+
+process.nuclearInteractionIdentifierOwn = cms.EDProducer("NuclearInteractionIdentifierDetector",
+	primaryVertices = cms.InputTag("offlinePrimaryVertices"),
+	secondaryVertices = cms.InputTag("inclusiveMergedVertices"),
+	beamSpot = cms.InputTag("offlineBeamSpot")
+)
+
+process.cleanedInclusiveMergedVerticesOwn = cms.EDProducer("VertexCleaner",
+	primaryVertices= cms.InputTag("nuclearInteractionIdentifierOwn"),
+	secondaryVertices = cms.InputTag("inclusiveMergedVertices"),
+	maxFraction = cms.double(0.0)
+)
+
+process.trackCollectionCleanerOwn = cms.EDProducer("TrackCollectionCleaner",
+	vertices= cms.InputTag("nuclearInteractionIdentifierOwn"),
+	tracks = cms.InputTag("generalTracks")
+)
+
+process.ak5JetCleanedTracksAssociatorAtVertexOwn = process.ak5JetTracksAssociatorAtVertex.clone(
+	tracks = cms.InputTag("trackCollectionCleanerOwn")
+)
 
 
+process.inclusiveVertexFinder3 = process.inclusiveVertexFinder.clone(tracks = cms.InputTag("trackCollectionCleanerOwn"))
+process.vertexMerger3 = process.vertexMerger.clone(secondaryVertices = cms.InputTag("inclusiveVertexFinder3"))
+process.trackVertexArbitrator3 = process.trackVertexArbitrator.clone(tracks = cms.InputTag("trackCollectionCleanerOwn"),secondaryVertices = cms.InputTag("vertexMerger3"))
+process.inclusiveMergedVertices3 = process.inclusiveMergedVertices.clone(secondaryVertices = cms.InputTag("trackVertexArbitrator3"))
+
+process.inclusiveVertexing3 = cms.Sequence(process.inclusiveVertexFinder3*process.vertexMerger3*process.trackVertexArbitrator3*process.inclusiveMergedVertices3)
+
+#new
+process.offlinePrimaryVertices3 = process.offlinePrimaryVertices.clone(TrackLabel=cms.InputTag("trackCollectionCleanerOwn"))
+process.inclusiveVertexFinder3.primaryVertices = cms.InputTag("offlinePrimaryVertices3")
+process.trackVertexArbitrator3.primaryVertices = cms.InputTag("offlinePrimaryVertices3")
+
+process.cleanedImpactParameterTagInfosOwn = process.impactParameterTagInfos.clone(
+	jetTracks = cms.InputTag("ak5JetCleanedTracksAssociatorAtVertexOwn"),
+	primaryVertex = cms.InputTag("offlinePrimaryVertices3")
+)
+
+process.cleanedInclusiveSecondaryVertexFinderTagInfosOwn = process.inclusiveSecondaryVertexFinderTagInfos.clone(
+	extSVCollection = cms.InputTag("inclusiveMergedVertices3"),
+	trackIPTagInfos = cms.InputTag("cleanedImpactParameterTagInfosOwn")
+)
+process.cleanedCombinedInclusiveSecondaryVertexBJetTagsOwn = process.combinedInclusiveSecondaryVertexBJetTags.clone(
+	tagInfos = cms.VInputTag(cms.InputTag("cleanedImpactParameterTagInfosOwn"),
+		cms.InputTag("cleanedInclusiveSecondaryVertexFinderTagInfosOwn"))
+)
+
+
+#==============SET UP IVF WITHOUT TRACKS FROM PRIMARY VERTEX COLLECTION==================
+
+process.inclusiveVertexFinder4 = process.inclusiveVertexFinder.clone(tracks = cms.InputTag("filteredTracks"))
+process.vertexMerger4 = process.vertexMerger.clone(secondaryVertices = cms.InputTag("inclusiveVertexFinder4"))
+process.trackVertexArbitrator4 = process.trackVertexArbitrator.clone(tracks = cms.InputTag("filteredTracks"),secondaryVertices = cms.InputTag("vertexMerger4"))
+process.inclusiveMergedVertices4 = process.inclusiveMergedVertices.clone(secondaryVertices = cms.InputTag("trackVertexArbitrator4"))
+
+process.inclusiveVertexing4 = cms.Sequence(process.inclusiveVertexFinder4*process.vertexMerger4*process.trackVertexArbitrator4*process.inclusiveMergedVertices4)
+
+process.cleanedInclusiveSecondaryVertexFinderTagInfosNoPu = process.inclusiveSecondaryVertexFinderTagInfos.clone(
+	extSVCollection = cms.InputTag("inclusiveMergedVertices4")
+)
+process.cleanedCombinedInclusiveSecondaryVertexBJetTagsNoPu = process.combinedInclusiveSecondaryVertexBJetTags.clone(
+        tagInfos = cms.VInputTag(cms.InputTag("impactParameterTagInfos"),
+                                 cms.InputTag("cleanedInclusiveSecondaryVertexFinderTagInfosNoPu"))
+)
+
+#==============SET UP THE PATHS AND EXECUTE ALL THE MODULES==============================
 
 #process.plots = cms.Path(process.nuclearInteractionIdentifier * process.cleanedInclusiveMergedVertices * process.trackCollectionCleaner * process.inclusiveVertexing2 * process.ak5JetCleanedTracksAssociatorAtVertex * process.cleanedImpactParameterTagInfos * process.cleanedInclusiveSecondaryVertexFinderTagInfos * process.cleanedCombinedInclusiveSecondaryVertexBJetTags * process.cleaned1InclusiveSecondaryVertexFinderTagInfos * process.cleaned1CombinedInclusiveSecondaryVertexBJetTags)
 
-process.plots = cms.Path(process.myPartons* process.AK5Flavour * process.btagging  * process.inclusiveVertexing * process.inclusiveSecondaryVertexFinderTagInfos * process.combinedInclusiveSecondaryVertexBJetTags * process.nuclearInteractionIdentifier * process.cleanedInclusiveMergedVertices * process.trackCollectionCleaner * process.offlinePrimaryVertices2 * process.inclusiveVertexing2 * process.ak5JetCleanedTracksAssociatorAtVertex * process.cleanedImpactParameterTagInfos * process.cleanedInclusiveSecondaryVertexFinderTagInfos * process.cleanedCombinedInclusiveSecondaryVertexBJetTags * process.CustombTagValidation * process.dqmSaver)
+process.plots = cms.Path(process.filteredTracks * process.myPartons* process.AK5Flavour * process.btagging  * process.inclusiveVertexing * process.inclusiveSecondaryVertexFinderTagInfos * process.combinedInclusiveSecondaryVertexBJetTags * process.nuclearInteractionIdentifier * process.cleanedInclusiveMergedVertices * process.trackCollectionCleaner * process.offlinePrimaryVertices2 * process.inclusiveVertexing2 * process.ak5JetCleanedTracksAssociatorAtVertex * process.cleanedImpactParameterTagInfos * process.cleanedInclusiveSecondaryVertexFinderTagInfos * process.cleanedCombinedInclusiveSecondaryVertexBJetTags * process.nuclearInteractionIdentifierOwn * process.cleanedInclusiveMergedVerticesOwn * process.trackCollectionCleanerOwn * process.offlinePrimaryVertices3 * process.inclusiveVertexing3 * process.ak5JetCleanedTracksAssociatorAtVertexOwn * process.cleanedImpactParameterTagInfosOwn * process.cleanedInclusiveSecondaryVertexFinderTagInfosOwn * process.cleanedCombinedInclusiveSecondaryVertexBJetTagsOwn * process.inclusiveVertexing4 * process.cleanedInclusiveSecondaryVertexFinderTagInfosNoPu * process.cleanedCombinedInclusiveSecondaryVertexBJetTagsNoPu * process.CustombTagValidation * process.dqmSaver)
 
 process.dqmEnv.subSystemFolder = 'BTAG'
 process.dqmSaver.producer = 'DQM'

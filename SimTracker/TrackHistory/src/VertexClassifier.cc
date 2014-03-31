@@ -177,8 +177,11 @@ void VertexClassifier::processesAtGenerator()
 
 void VertexClassifier::processesAtSimulation()
 {
-    VertexHistory::SimVertexTrail const & simVertexTrail = tracer_.simVertexTrail();
-
+    
+    
+    VertexHistory::SimVertexTrail const & simVertexTrail = tracer_.simVertexTrail();	/// typedef std::vector<TrackingVertexRef> SimVertexTrail;
+    
+    /// go over all TrackingVertices in the simVertexTrail
     for (
         VertexHistory::SimVertexTrail::const_iterator ivertex = simVertexTrail.begin();
         ivertex != simVertexTrail.end();
@@ -191,7 +194,8 @@ void VertexClassifier::processesAtSimulation()
         // select the original source in case of combined vertices
         bool flag = false;
         TrackingVertex::tp_iterator itd, its;
-
+	
+	/// loop over all source tracks (so tracks that go into the vertex) of a tracking vertex, ideally just one; then check if this matches one of the outgoing tracks so if there is some sort of "track loop" (probably from a removed vertex shortly after the original vertex where the intermediate track still remains); if this is not the case, get the pdgid of the source track (which is the "original source track") in the next step otherwise (so if it's a "fake" tracking vertex) set the pdgid to 0
         for (its = (*ivertex)->sourceTracks_begin(); its != (*ivertex)->sourceTracks_end(); ++its)
         {
             for (itd = (*ivertex)->daughterTracks_begin(); itd != (*ivertex)->daughterTracks_end(); ++itd)
@@ -210,6 +214,7 @@ void VertexClassifier::processesAtSimulation()
             pdgid = 0;
 
         // Loop over the simulated particles
+	/// now loop over all outgoing, produced tracks and check for each if it has pSimHits
         for (
             TrackingVertex::tp_iterator iparticle = (*ivertex)->daughterTracks_begin();
             iparticle != (*ivertex)->daughterTracks_end();

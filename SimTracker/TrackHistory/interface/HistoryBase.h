@@ -34,6 +34,8 @@ public:
     {
         // Default depth
         depth_ = -1;
+	
+	debugMsg_ = false;
     }
 
     //! Set the depth of the history.
@@ -91,8 +93,12 @@ public:
         if ( genParticleTrail_.empty() ) return 0;
         return genParticleTrail_[genParticleTrail_.size()-1];
     }
+    
+    void debugMsg(bool debug) { debugMsg_ = debug; }
 
 protected:
+    
+    bool debugMsg_;
 
     // History cointainers
     GenVertexTrail genVertexTrail_;

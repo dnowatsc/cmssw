@@ -18,7 +18,9 @@ process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
-process.load("PhysicsTools.JetMCAlgos.CaloJetsMCFlavour_cfi")  
+process.load("PhysicsTools.JetMCAlgos.CaloJetsMCFlavour_cfi")
+process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
+process.load("SimTracker.TrackHistory.TrackClassifier_cff")
 
 process.load("Validation.RecoB.bTagAnalysis_cfi")
 process.bTagValidation.jetMCSrc = 'AK5byValAlgo'
@@ -26,7 +28,7 @@ process.bTagValidation.allHistograms = True
 #process.bTagValidation.fastMC = True
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(100)
 )
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring()
@@ -34,7 +36,41 @@ process.source = cms.Source("PoolSource",
 
 process.GlobalTag.globaltag = 'START53_V27::All'
 
-process.load("SimTracker.TrackHistory.TrackClassifier_cff")
+#===========SELECT VERTICES BASED ON CATEGORY==============
+
+process.vertexSelectorDefaultTight = cms.EDFilter("VertexHistoryFilterOwn",
+	recoVertices = cms.InputTag('inclusiveMergedVertices'),
+	discriminator = cms.double(0.9),
+	trackingParticles = cms.InputTag("mergedtruth","MergedTrackTruth"),
+	debugMessage = cms.bool(True),
+	vertexClassifierWeight = cms.PSet(
+		trackingParticleSelector = cms.PSet(
+        		lipTP = cms.double(30.0),
+        		chargedOnlyTP = cms.bool(True),
+        		pdgIdTP = cms.vint32(),
+        		signalOnlyTP = cms.bool(True),
+        		stableOnlyTP = cms.bool(True),
+        		minRapidityTP = cms.double(-2.4),
+        		minHitTP = cms.int32(0),
+        		ptMinTP = cms.double(0.9),
+        		maxRapidityTP = cms.double(2.4),
+        		tipTP = cms.double(3.5)
+    		)
+	)
+)
+
+process.vertexSelectorDefaultMedium = process.vertexSelectorDefaultTight.clone( discriminator = cms.double(0.5), debugMessage = cms.bool(False) )
+
+process.vertexSelectorDefaultLoose = process.vertexSelectorDefaultTight.clone( discriminator = cms.double(0.1), debugMessage = cms.bool(False) )
+
+#process.vertexSelectorEditTight = process.vertexSelectorDefaultTight.clone( recoVertices = cms.InputTag('inclusiveMergedVerticesEdit') )
+
+#process.vertexSelectorEditMedium = process.vertexSelectorEditTight.clone( discriminator = cms.double(0.5), debugMessage = cms.bool(False) )
+
+#process.vertexSelectorEditLoose = process.vertexSelectorEditTight.clone( discriminator = cms.double(0.1), debugMessage = cms.bool(False) )
+
+
+#===========FILTERS==============
 
 process.allBParticles  = cms.EDFilter("GenParticleSelector",
      filter = cms.bool(False),
@@ -55,19 +91,6 @@ process.cParticlesFilter  = cms.EDFilter("GenParticleSelector",
      stableOnly = cms.bool(False)
 )
 
-process.bTracksProducer = cms.EDProducer("BTracksProducer",
-    trackConfig = cms.PSet(process.trackClassifier),
-    simG4 = cms.InputTag("g4SimHits"),
-    trackingTruth = cms.untracked.InputTag("mergedtruth","MergedTrackTruth"),
-    trackInputTag = cms.untracked.InputTag("generalTracks"),
-    allSim = cms.untracked.bool(False)
-)
-#process.bTracksProducer.trackConfig.trackProducer = cms.untracked.InputTag("generalTracks")
-process.bTracksProducer.trackConfig.enableSimToReco = cms.untracked.bool(True)
-#process.bTracksProducer.trackConfig.bestMatchByMaxValue = cms.untracked.bool(True)
-#process.bTracksProducer.trackingTruth.signalOnlyTP  = cms.untracked.bool(True)
-process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
-
 process.btagNonBFilter = cms.EDFilter("BTagAndFlavourFilter",
      minDiscr = cms.double(0.70),
      minPt = cms.double(30),
@@ -75,34 +98,77 @@ process.btagNonBFilter = cms.EDFilter("BTagAndFlavourFilter",
      jetTag  = cms.InputTag("combinedInclusiveSecondaryVertexBJetTags"),
      isSignal = cms.bool(False)
 )
+
+
+#process.bTracksProducer = cms.EDProducer("BTracksProducerOwn",
+    #trackConfig = cms.PSet(process.trackClassifier),
+    #simG4 = cms.InputTag("g4SimHits"),
+    #trackingTruth = cms.untracked.InputTag("mergedtruth","MergedTrackTruth"),
+    #trackInputTag = cms.untracked.InputTag("generalTracks"),
+    #allSim = cms.untracked.bool(False)
+#)
+#process.bTracksProducer.trackConfig.trackProducer = cms.untracked.InputTag("generalTracks")
+#process.bTracksProducer.trackConfig.enableSimToReco = cms.untracked.bool(True)
+#process.bTracksProducer.trackConfig.bestMatchByMaxValue = cms.untracked.bool(True)
+#process.bTracksProducer.trackingTruth.signalOnlyTP  = cms.untracked.bool(True)
+
+#process.bTracksProducerSV0 = cms.EDProducer("BTracksProducer",
+    #trackConfig = cms.PSet(process.trackClassifier),
+    #simG4 = cms.InputTag("g4SimHits"),
+    #trackingTruth = cms.untracked.InputTag("mergedtruth","MergedTrackTruth"),
+    #trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex0"),
+    #allSim = cms.untracked.bool(True)
+#)
+#process.bTracksProducerSV0.trackConfig.enableSimToReco = cms.untracked.bool(True)
+#process.bTracksProducerSV0.trackConfig.trackProducer = cms.untracked.InputTag("generalTracks")
+#process.bTracksProducerSV1 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex1"))
+#process.bTracksProducerSV2 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex2"))
+#process.bTracksProducerSV3 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex3"))
+#process.bTracksProducerSV4 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex4"))
+
+#process.bTracksProducerSV0.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex0")
+#process.bTracksProducerSV1.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex1")
+#process.bTracksProducerSV2.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex2")
+#process.bTracksProducerSV3.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex3")
+#process.bTracksProducerSV4.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex4")
+
+
+
+#==========SELECT 5 VERTICES===================
+
 process.vertexSplitter = cms.EDProducer("VertexTrackSplitter",
     vertexInputTag = cms.InputTag("inclusiveMergedVertices"),
     max = cms.untracked.uint32(5)
 )
-process.bTracksProducerSV0 = cms.EDProducer("BTracksProducer",
-    trackConfig = cms.PSet(process.trackClassifier),
-    simG4 = cms.InputTag("g4SimHits"),
-    trackingTruth = cms.untracked.InputTag("mergedtruth","MergedTrackTruth"),
-    trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex0"),
-    allSim = cms.untracked.bool(True)
-)
-process.bTracksProducerSV0.trackConfig.enableSimToReco = cms.untracked.bool(True)
-process.bTracksProducerSV0.trackConfig.trackProducer = cms.untracked.InputTag("generalTracks")
-process.bTracksProducerSV1 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex1"))
-process.bTracksProducerSV2 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex2"))
-process.bTracksProducerSV3 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex3"))
-process.bTracksProducerSV4 = process.bTracksProducerSV0.clone(trackInputTag = cms.untracked.InputTag("vertexSplitter","vertex4"))
 
-process.bTracksProducerSV0.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex0")
-process.bTracksProducerSV1.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex1")
-process.bTracksProducerSV2.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex2")
-process.bTracksProducerSV3.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex3")
-process.bTracksProducerSV4.trackConfig.trackProducer = cms.untracked.InputTag("vertexSplitter","vertex4")
+
+#==========CREATE TRACK COLLECTIONS FOR EACH OF THESE FIVE VERTICES===================
+
+process.vertexSelectorDefaultMediumSV0 = process.vertexSelectorDefaultMedium.clone( recoVertices = cms.InputTag('vertexSplitter', 'vertex0') )
+
+process.vertexSelectorDefaultMediumSV1 = process.vertexSelectorDefaultMedium.clone( recoVertices = cms.InputTag('vertexSplitter', 'vertex1') )
+
+process.vertexSelectorDefaultMediumSV2 = process.vertexSelectorDefaultMedium.clone( recoVertices = cms.InputTag('vertexSplitter', 'vertex2') )
+
+process.vertexSelectorDefaultMediumSV3 = process.vertexSelectorDefaultMedium.clone( recoVertices = cms.InputTag('vertexSplitter', 'vertex3') )
+
+process.vertexSelectorDefaultMediumSV4 = process.vertexSelectorDefaultMedium.clone( recoVertices = cms.InputTag('vertexSplitter', 'vertex4') )
 
 
 #process.p = cms.Path(process.allBParticles * process.bParticlesFilter* process.cParticlesFilter* process.bTracksProducer * process.myPartons* process.AK5Flavour * process.btagging * process.inclusiveVertexing * process.inclusiveSecondaryVertexFinderTagInfos * process.combinedInclusiveSecondaryVertexBJetTags)
 #process.p = cms.Path(process.allBParticles * process.bParticlesFilter * process.cParticlesFilter * process.myPartons* process.AK5Flavour * process.btagging * process.inclusiveVertexing * process.inclusiveSecondaryVertexFinderTagInfos * process.combinedInclusiveSecondaryVertexBJetTags *  process.bTracksProducer * process.vertexSplitter * process.bTracksProducerSV0 * process.bTracksProducerSV1 * process.bTracksProducerSV2 * process.bTracksProducerSV3 * process.bTracksProducerSV4 )
-process.pfake = cms.Path(process.allBParticles *  process.cParticlesFilter * process.myPartons* process.AK5Flavour * process.btagging * process.inclusiveVertexing * process.inclusiveSecondaryVertexFinderTagInfos * process.combinedInclusiveSecondaryVertexBJetTags * process.btagNonBFilter *  process.bTracksProducer * process.vertexSplitter * process.bTracksProducerSV0 * process.bTracksProducerSV1 * process.bTracksProducerSV2 * process.bTracksProducerSV3 * process.bTracksProducerSV4 )
+
+
+
+#==========WRITE THE PATHS===================
+
+process.pall = cms.Path(process.myPartons * process.AK5Flavour * process.btagging * process.inclusiveVertexing * process.inclusiveSecondaryVertexFinderTagInfos * process.combinedInclusiveSecondaryVertexBJetTags * process.vertexSelectorDefaultTight * process.vertexSelectorDefaultMedium * process.vertexSelectorDefaultLoose * process.vertexSplitter * process.vertexSelectorDefaultMediumSV0 * process.vertexSelectorDefaultMediumSV1 * process.vertexSelectorDefaultMediumSV2 * process.vertexSelectorDefaultMediumSV3 * process.vertexSelectorDefaultMediumSV4 )
+
+process.pfake = cms.Path(process.myPartons * process.AK5Flavour * process.btagging * process.inclusiveVertexing * process.inclusiveSecondaryVertexFinderTagInfos * process.combinedInclusiveSecondaryVertexBJetTags * process.btagNonBFilter * process.vertexSelectorDefaultTight * process.vertexSelectorDefaultMedium * process.vertexSelectorDefaultLoose * process.vertexSplitter * process.vertexSelectorDefaultMediumSV0 * process.vertexSelectorDefaultMediumSV1 * process.vertexSelectorDefaultMediumSV2 * process.vertexSelectorDefaultMediumSV3 * process.vertexSelectorDefaultMediumSV4 )
+
+
+
+
 
 process.PoolSource.fileNames = [
   #"file:/nfs/dust/cms/user/nowatsd/CMSSW/CMSSW_5_3_14/src/Validation/RecoB/input_rootfiles/ttjets_8tev_mad_recodebug.root"
@@ -219,16 +285,17 @@ process.PoolSource.fileNames = [
 ]
 
 process.outfake = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('rootfiles/btag004-fakefromttbar_btag070_TEST.root'),
+    fileName = cms.untracked.string('reco_bDebugOwn_2_fake_100.root'),
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring("pfake"))
 )    
+
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('btag003_2.root'),
+    fileName = cms.untracked.string('reco_bDebugOwn_2_all_100.root'),
     SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring("p"))
+        SelectEvents = cms.vstring("pall"))
 )
-process.endpath= cms.EndPath(process.outfake)
+process.endpath= cms.EndPath(process.outfake * process.out)
 
 
 process.load('CondCore.DBCommon.CondDBSetup_cfi')
