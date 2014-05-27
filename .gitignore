@@ -1,2 +1,10 @@
 __init__.py
+.gitignore
+*for_kate
+*.eps
+*.png
+*.pdf
+*.root
+*~
+*.fwc
 *.pyc
