@@ -31,7 +31,7 @@
 #include "SimTracker/Records/interface/TrackAssociatorRecord.h"
 #include "SimDataFormats/Track/interface/SimTrack.h"
 
-#include "Validation/IvfAnalyzer/interface/VertexClassifierWeight.h"
+#include "SimTracker/VertexHistory/interface/VertexClassifierWeight.h"
 
 #include "DataFormats/GeometryVector/interface/VectorUtil.h"
 
