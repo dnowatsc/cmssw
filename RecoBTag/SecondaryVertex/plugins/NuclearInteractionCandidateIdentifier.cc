@@ -8,6 +8,10 @@
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 #include "DataFormats/Common/interface/PtrVector.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+
+
 
 
 
@@ -22,7 +26,7 @@ class NuclearInteractionCandidateIdentifier : public edm::EDProducer {
 
     private:
 
-// 	edm::EDGetTokenT<reco::VertexCollection> tokenPrimaryVertexCollection;
+	edm::EDGetTokenT<reco::VertexCollection> tokenPrimaryVertexCollection;
 	edm::EDGetTokenT<edm::View<reco::VertexCompositePtrCandidate> > tokenSecondaryVertexCollection;
 // 	edm::InputTag beamSpotCollection;
 	edm::ParameterSet selectionCriteria;
@@ -32,7 +36,7 @@ NuclearInteractionCandidateIdentifier::NuclearInteractionCandidateIdentifier(con
 // 	beamSpotCollection           (params.getParameter<edm::InputTag>("beamSpot"))
 	selectionCriteria(params.getParameter<edm::ParameterSet>("selection"))
 {
-// 	tokenPrimaryVertexCollection = consumes<reco::VertexCollection>(params.getParameter<edm::InputTag>("primaryVertices"));
+	tokenPrimaryVertexCollection = consumes<reco::VertexCollection>(params.getParameter<edm::InputTag>("primaryVertices"));
 	tokenSecondaryVertexCollection = consumes<edm::View<reco::VertexCompositePtrCandidate> >(params.getParameter<edm::InputTag>("secondaryVertices"));
 	produces<std::vector<reco::VertexCompositePtrCandidate> >();
 }
@@ -42,13 +46,14 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 {
 // 	using namespace reco;
 	
-	typedef reco::Candidate::Point GlobalPoint;
+	typedef reco::Candidate::Point Point;
+	typedef reco::Candidate::Vector Vector;
 
 	edm::Handle<edm::View<reco::VertexCompositePtrCandidate> > secondaryVertices;
 	event.getByToken(tokenSecondaryVertexCollection, secondaryVertices);
 	
-// 	edm::Handle<VertexCollection> primaryVertices;
-// 	event.getByToken(tokenPrimaryVertexCollection, primaryVertices);
+	edm::Handle<reco::VertexCollection> primaryVertices;
+	event.getByToken(tokenPrimaryVertexCollection, primaryVertices);
 
 	std::auto_ptr<std::vector<reco::VertexCompositePtrCandidate> > recoVertices(new std::vector<reco::VertexCompositePtrCandidate>);
 	
@@ -58,11 +63,10 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 	// 		event.getByLabel(beamSpotCollection, beamSpot);
 	
 	for(unsigned int ivtx=0; ivtx < secondaryVertices->size(); ivtx++){
-		const reco::VertexCompositePtrCandidate & sv = (*secondaryVertices)[ivtx];	
-		float mass=sv.mass();
+		const reco::VertexCompositePtrCandidate & sv = (*secondaryVertices)[ivtx];
 		// 			GlobalPoint ppv(pv.position().x(),pv.position().y(),pv.position().z());
-		GlobalPoint ssv(sv.vx(),sv.vy(),sv.vz());
-		int ntracks = sv.numberOfDaughters();
+		Point ssv(sv.vx(),sv.vy(),sv.vz());
+		float mass=sv.mass();
 		
 		bool isNI = false;
 		
@@ -82,6 +86,26 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 		
 		// if it is close to detector material, check for other criteria
 		
+		if (selectionCriteria.exists("maxZ") && isNI){
+			float z = std::abs(ssv.z());
+			double maxZ = selectionCriteria.getParameter<double>("maxZ");
+			if (z > maxZ) isNI = false;
+		}
+		
+		if (selectionCriteria.exists("minNctau") && isNI){
+			const reco::Vertex &pv = (*primaryVertices)[0];
+			Point ppv(pv.position().x(),pv.position().y(),pv.position().z());
+			float pt=sv.pt();
+			float gamma=pt/mass;
+			Vector flightDir = ssv-ppv;
+			float flightDistance2D = flightDir.rho();
+			float Bctau = 0.05;		// c*tau for B hadron
+			
+			float nctau = flightDistance2D/(gamma*Bctau);	// number of c*taus for potential B hadron
+			double minNctau = selectionCriteria.getParameter<double>("minNctau");
+			if (nctau < minNctau) isNI = false;
+		}
+		
 		if (selectionCriteria.exists("minMass") && isNI){
 			double minMass = selectionCriteria.getParameter<double>("minMass");
 			if (mass < minMass) isNI = false;				
@@ -91,10 +115,12 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 			if (mass > maxMass) isNI = false;				
 		}
 		if (selectionCriteria.exists("minNtracks") && isNI){
+			int ntracks = sv.numberOfDaughters();
 			int minNtracks = selectionCriteria.getParameter<int>("minNtracks");
 			if (ntracks < minNtracks) isNI = false;				
 		}
 		if (selectionCriteria.exists("maxNtracks") && isNI){
+			int ntracks = sv.numberOfDaughters();
 			int maxNtracks = selectionCriteria.getParameter<int>("maxNtracks");
 			if (ntracks > maxNtracks) isNI = false;				
 		}
