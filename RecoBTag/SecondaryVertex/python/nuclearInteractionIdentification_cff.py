@@ -4,6 +4,22 @@ from RecoBTag.SecondaryVertex.nuclearInteractionIdentifier_cfi import *
 from RecoBTag.SecondaryVertex.vertexAndTracksCleaner_cfi import *
 from RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff import *
 
+
+#===========================================
+# NI rejection and tracks cleaning procedure
+#
+# short descriptions of the different versions (0 to 7)
+# version 0: identify solely based on position
+# version 1: identify based on position, mass & ntracks
+# version 2: identify based on position & Nctau (=flightDistance2D/(gamma*Bctau) with gamma = pt/mass and Bctau = 0.05 cm
+# version 3: identify based on position, mass, ntracks & Nctau
+# version 4-7: same as versions 0-3, but first run IVF with relaxed cuts (see below)
+#
+#===========================================
+
+
+
+
 # IVF run with relaxed cuts to identify more NIs
 
 inclusiveVertexFinderRelaxed = inclusiveCandidateVertexFinder.clone(
@@ -23,9 +39,8 @@ inclusiveSecondaryVerticesRelaxed = candidateVertexMerger.clone(
 
 inclusiveCandidateVertexingRelaxed = cms.Sequence(inclusiveVertexFinderRelaxed*vertexMergerRelaxed*trackVertexArbitratorRelaxed*inclusiveSecondaryVerticesRelaxed)
 
-# NI rejection and tracks cleaning procedure
+# NI identifiers
 
-# identify solely based on position
 nuclearInteractionIdentifier0 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionCandIdentifier.selection,
@@ -33,7 +48,6 @@ nuclearInteractionIdentifier0 = nuclearInteractionCandIdentifier.clone(
 	)
 )
 
-# identify based on position, mass & ntracks
 nuclearInteractionIdentifier1 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionIdentifier0.selection,
@@ -42,7 +56,6 @@ nuclearInteractionIdentifier1 = nuclearInteractionCandIdentifier.clone(
 	)
 )
 
-# identify based on position & nctau
 nuclearInteractionIdentifier2 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionIdentifier0.selection,
@@ -50,7 +63,6 @@ nuclearInteractionIdentifier2 = nuclearInteractionCandIdentifier.clone(
 	)
 )
 
-# identify based on position, mass, ntracks & nctau
 nuclearInteractionIdentifier3 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionIdentifier1.selection,
@@ -58,26 +70,24 @@ nuclearInteractionIdentifier3 = nuclearInteractionCandIdentifier.clone(
 	)
 )
 
-# first run IVF with relaxed cuts (maximumLongitudinalImpactParameter = 1.0, vertexMinAngleCosine = 0.8), then identify NIs based on position, mass & ntracks
 nuclearInteractionIdentifier4 = nuclearInteractionIdentifier0.clone(
 	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
 )
 
-# as version 2 but again simply position-based id
 nuclearInteractionIdentifier5 = nuclearInteractionIdentifier1.clone(
 	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
 )
 
-# first run IVF with relaxed cuts (maximumLongitudinalImpactParameter = 1.0, vertexMinAngleCosine = 0.8), then identify NIs based on position, mass & ntracks
 nuclearInteractionIdentifier6 = nuclearInteractionIdentifier2.clone(
 	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
 )
 
-# as version 2 but again simply position-based id
 nuclearInteractionIdentifier7 = nuclearInteractionIdentifier3.clone(
 	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
 )
-	
+
+# vertex and pfcandidates cleaning steps
+
 vertexAndTracksCleaned0 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier0")
 vertexAndTracksCleaned1 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier1")
 vertexAndTracksCleaned2 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier2")
@@ -129,6 +139,8 @@ inclusiveSecondaryVerticesCleaned4 = inclusiveSecondaryVerticesCleaned0.clone(se
 inclusiveSecondaryVerticesCleaned5 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned5"))
 inclusiveSecondaryVerticesCleaned6 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned6"))
 inclusiveSecondaryVerticesCleaned7 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned7"))
+
+# all NI rejection sequences
 
 nuclearInteractionsRemoved0 = cms.Sequence(
 	inclusiveCandidateVertexing *
