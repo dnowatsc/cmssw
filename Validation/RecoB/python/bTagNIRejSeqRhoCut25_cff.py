@@ -9,6 +9,14 @@ from RecoBTag.SecondaryVertex.candidateCombinedSecondaryVertexES_cfi import *
 from RecoBTag.SecondaryVertex.pfCombinedSecondaryVertexBJetTags_cfi import *
 from RecoBTag.SecondaryVertex.combinedInclusiveSecondaryVertexBJetTags_cfi import *
 
+
+#======================================================================
+# run nuclear interaction identifications with the standard
+# pfInclusiveSecondaryVertexFinderTagInfos module, so including
+# the cut on the SV position at rho=2.5
+#======================================================================
+
+
 # standard CSVIVFv2 sequence
 
 MYbtagSequenceStandardRho25 = cms.Sequence(
@@ -19,33 +27,9 @@ MYbtagSequenceStandardRho25 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-## standard CSVIVFv2 sequence with removed position cut on SV in pfInclusiveSecondaryVertexFinderTagInfos
-
-#pfInclusiveSecondaryVertexFinderTagInfosNoMin2D = pfInclusiveSecondaryVertexFinderTagInfos.clone()
-#pfInclusiveSecondaryVertexFinderTagInfosNoMin2D.vertexCuts.distVal2dMax = 99999.9
-
-#pfCombinedInclusiveSecondaryVertexV2BJetTagsNoMin2D = pfCombinedInclusiveSecondaryVertexV2BJetTags.clone(
-	#tagInfos = cms.VInputTag(
-		#cms.InputTag("pfImpactParameterTagInfos"),
-		#cms.InputTag("pfInclusiveSecondaryVertexFinderTagInfosNoMin2D")
-	#)
-#)
-
-#MYbtagSequenceNoMin2D = cms.Sequence(
-	#inclusiveCandidateVertexing *
-	#pfImpactParameterTagInfos *
-	#pfInclusiveSecondaryVertexFinderTagInfosNoMin2D *
-	#pfCombinedInclusiveSecondaryVertexV2BJetTagsNoMin2D *
-	#softPFElectronsTagInfos
-#)
-
-
-
-
 from RecoBTag.SecondaryVertex.nuclearInteractionIdentification_cff import *
 
-# from here on up until including version 3, all NI identifiers are based on NoMin2D SVTagInfoProducer
-# sequence with NIs removed (version 0, simply positions)
+# NI rejection version 0
 
 pfImpactParameterTagInfosCleanedRho25v0 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned0")
@@ -69,7 +53,7 @@ MYbtagSequenceNIremovedRho25v0 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-# sequence with NIs removed (version 1, position + mass + ntracks cut)
+# NI rejection version 1
 
 pfImpactParameterTagInfosCleanedRho25v1 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned1")
@@ -93,7 +77,7 @@ MYbtagSequenceNIremovedRho25v1 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-# sequence with NIs removed (version 2, position + mass + ntracks cut + NI id with relaxed IVF cuts)
+# NI rejection version 2
 
 pfImpactParameterTagInfosCleanedRho25v2 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned2")
@@ -117,7 +101,7 @@ MYbtagSequenceNIremovedRho25v2 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-# sequence with NIs removed (version 3, only position + NI id with relaxed IVF cuts)
+# NI rejection version 3
 
 pfImpactParameterTagInfosCleanedRho25v3 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned3")
@@ -141,7 +125,7 @@ MYbtagSequenceNIremovedRho25v3 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-# sequence with NIs removed (version 4, position + nctau cut, NI id with relaxed IVF cuts)
+# NI rejection version 4
 
 pfImpactParameterTagInfosCleanedRho25v4 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned4")
@@ -165,7 +149,7 @@ MYbtagSequenceNIremovedRho25v4 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-# sequence with NIs removed (version 5, position + mass + ntracks + nctau cut, NI id with relaxed IVF cuts)
+# NI rejection version 5
 
 pfImpactParameterTagInfosCleanedRho25v5 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned5")
@@ -189,8 +173,7 @@ MYbtagSequenceNIremovedRho25v5 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-# from here on, rho cut is applied again
-# sequence with NIs removed, but with rho=2.5 cut (version 6, simply positions)
+# NI rejection version 6
 
 pfImpactParameterTagInfosCleanedRho25v6 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned6")
@@ -214,7 +197,7 @@ MYbtagSequenceNIremovedRho25v6 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-# sequence with NIs removed, but with rho=2.5 cut (version 7, position + mass + ntracks cut + NI id with relaxed IVF cuts)
+# NI rejection version 7
 
 pfImpactParameterTagInfosCleanedRho25v7 = pfImpactParameterTagInfos.clone(
 	candidates = cms.InputTag("vertexAndTracksCleaned7")
@@ -238,6 +221,7 @@ MYbtagSequenceNIremovedRho25v7 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
+# all b-tagging sequences
 
 niRejSeqRhoCut25 = cms.Sequence(
 	MYbtagSequenceStandardRho25 *

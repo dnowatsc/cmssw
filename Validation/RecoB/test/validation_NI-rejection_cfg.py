@@ -195,7 +195,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(9000)
 )
 
-version = '07_9000ev_rho25_rho90_rho999_nirej0to7_aricluspl'
+version = '02_9000ev_rho25_rho90_rho999_nirej0to7_aricluspl'
     
 process.dqmEnv.subSystemFolder = 'BTAG'
 process.dqmSaver.producer = 'DQM'
@@ -205,28 +205,28 @@ process.dqmSaver.saveByRun = cms.untracked.int32(-1)
 process.dqmSaver.saveAtJobEnd =cms.untracked.bool(True) 
 process.dqmSaver.forceRunNumber = cms.untracked.int32(1)
 process.PoolSource.fileNames = [
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/00753DE2-C730-E411-957F-0025905B85EE.root',
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/2C59AFBB-DA30-E411-832E-002590596498.root',
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/80BE6D20-DB30-E411-9644-0025905A609A.root',
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/BA1A0B52-C630-E411-B8D5-002618943896.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_1.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_10.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_11.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_12.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_13.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_14.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_15.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_16.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_17.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_18.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_2.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_3.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_4.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_5.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_6.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_7.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_8.root',
-	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_9.root'
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/00753DE2-C730-E411-957F-0025905B85EE.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/2C59AFBB-DA30-E411-832E-002590596498.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/80BE6D20-DB30-E411-9644-0025905A609A.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/BA1A0B52-C630-E411-B8D5-002618943896.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_1.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_10.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_11.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_12.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_13.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_14.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_15.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_16.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_17.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_18.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_2.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_3.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_4.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_5.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_6.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_7.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_8.root',
+	'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_9.root'
 	#'/store/relval/CMSSW_7_2_0_pre5/RelValTTbar_13/GEN-SIM-RECO/PU25ns_POSTLS172_V3-v1/00000/08C50B46-7F30-E411-80C1-0025905A6134.root',
 	#'/store/relval/CMSSW_7_2_0_pre5/RelValTTbar_13/GEN-SIM-RECO/PU25ns_POSTLS172_V3-v1/00000/0E49EFC9-5B30-E411-8C4F-0025905A60E4.root',
 	#'/store/relval/CMSSW_7_2_0_pre5/RelValTTbar_13/GEN-SIM-RECO/PU25ns_POSTLS172_V3-v1/00000/2C5FC4A6-5C30-E411-91E0-0026189438F5.root',
