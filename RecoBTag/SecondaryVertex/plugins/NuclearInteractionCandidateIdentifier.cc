@@ -38,7 +38,7 @@ NuclearInteractionCandidateIdentifier::NuclearInteractionCandidateIdentifier(con
 {
 	tokenPrimaryVertexCollection = consumes<reco::VertexCollection>(params.getParameter<edm::InputTag>("primaryVertices"));
 	tokenSecondaryVertexCollection = consumes<edm::View<reco::VertexCompositePtrCandidate> >(params.getParameter<edm::InputTag>("secondaryVertices"));
-	produces<std::vector<reco::VertexCompositePtrCandidate> >();
+	produces<edm::PtrVector<reco::Candidate> >();
 }
 
 
@@ -55,7 +55,7 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 	edm::Handle<reco::VertexCollection> primaryVertices;
 	event.getByToken(tokenPrimaryVertexCollection, primaryVertices);
 
-	std::auto_ptr<std::vector<reco::VertexCompositePtrCandidate> > recoVertices(new std::vector<reco::VertexCompositePtrCandidate>);
+	std::auto_ptr<edm::PtrVector<reco::Candidate> > recoVertices(new edm::PtrVector<reco::Candidate>);
 	
 	// 		const reco::Vertex &pv = (*primaryVertices)[0];
 	
@@ -126,7 +126,7 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 		}
 		
 		if(isNI) {
-			recoVertices->push_back(sv);
+			recoVertices->push_back(secondaryVertices->ptrAt(ivtx));
 		}
 		
 	}	

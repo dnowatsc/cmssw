@@ -192,10 +192,10 @@ process.dqmSeq = cms.Sequence(process.ak4GenJetsForPUid * process.patJetGenJetMa
 process.plots = cms.Path(process.bTagSeq * process.dqmSeq)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(9000)
+    input = cms.untracked.int32(501)
 )
 
-version = '02_9000ev_rho25_rho90_rho999_nirej0to7_aricluspl'
+version = '04_test_rho25_rho90_rho999_nirej0to7_aricluspl_newNIid'
     
 process.dqmEnv.subSystemFolder = 'BTAG'
 process.dqmSaver.producer = 'DQM'
