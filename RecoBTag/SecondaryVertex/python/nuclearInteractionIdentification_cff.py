@@ -88,14 +88,14 @@ nuclearInteractionIdentifier7 = nuclearInteractionIdentifier3.clone(
 
 # vertex and pfcandidates cleaning steps
 
-vertexAndTracksCleaned0 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier0")
-vertexAndTracksCleaned1 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier1")
-vertexAndTracksCleaned2 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier2")
-vertexAndTracksCleaned3 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier3")
-vertexAndTracksCleaned4 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier4")
-vertexAndTracksCleaned5 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier5")
-vertexAndTracksCleaned6 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier6")
-vertexAndTracksCleaned7 = vertexAndTracksCandCleaned.clone(vetoVert = "nuclearInteractionIdentifier7")
+vertexAndTracksCleaned0 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier0")
+vertexAndTracksCleaned1 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier1")
+vertexAndTracksCleaned2 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier2")
+vertexAndTracksCleaned3 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier3")
+vertexAndTracksCleaned4 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier4")
+vertexAndTracksCleaned5 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier5")
+vertexAndTracksCleaned6 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier6")
+vertexAndTracksCleaned7 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier7")
 
 # re-run IVF
 
