@@ -11,7 +11,9 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
-
+#include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
+#include "RecoVertex/VertexPrimitives/interface/ConvertToFromReco.h"
+#include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 
 
 
@@ -55,7 +57,7 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 	edm::Handle<reco::VertexCollection> primaryVertices;
 	event.getByToken(tokenPrimaryVertexCollection, primaryVertices);
 
-	std::auto_ptr<edm::PtrVector<reco::Candidate> > recoVertices(new edm::PtrVector<reco::Candidate>);
+	std::auto_ptr<edm::PtrVector<reco::Candidate> > niVertices(new edm::PtrVector<reco::Candidate>);
 	
 	// 		const reco::Vertex &pv = (*primaryVertices)[0];
 	
@@ -126,11 +128,32 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 		}
 		
 		if(isNI) {
-			recoVertices->push_back(secondaryVertices->ptrAt(ivtx));
+			niVertices->push_back(secondaryVertices->ptrAt(ivtx));
 		}
 		
-	}	
-	event.put(recoVertices);
+	}
+	
+	if (selectionCriteria.exists("distToNI")){
+		double distToNI = selectionCriteria.getParameter<double>("distToNI");
+		for (size_t ivtx = 0; ivtx < secondaryVertices->size(); ++ivtx){
+			for (size_t iNI = 0; iNI < niVertices->size(); ++iNI) {
+				VertexDistance3D dist;
+				reco::VertexCompositePtrCandidate const & sv = (*secondaryVertices)[ivtx];
+				reco::CandidatePtr ni = (*niVertices)[iNI];
+				VertexState svs(RecoVertex::convertPos(sv.vertex()),RecoVertex::convertError(sv.vertexCovariance()));
+				VertexState nis(RecoVertex::convertPos(ni->vertex()),RecoVertex::convertError(ni->vertexCovariance()));
+				Measurement1D d = dist.distance(svs, nis);
+				if( d.significance() < 3/distToNI and d.value() < distToNI )
+				{
+					niVertices->push_back(secondaryVertices->ptrAt(ivtx));
+					break;
+				}
+			}
+		}
+	}
+	
+	
+	event.put(niVertices);
 }
 
 DEFINE_FWK_MODULE(NuclearInteractionCandidateIdentifier);
