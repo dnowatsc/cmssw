@@ -43,7 +43,7 @@ fileNameRef = ""
 ValRel = "730pre1"
 RefRel = ""
 #define the sample labels
-ValSample = "arizzi_cluSpli_QCD_Pt_3000_3500"
+ValSample = "QCD_Pt_3000_3500"
 RefSample = ""
 
 maxRange = 11
@@ -51,7 +51,7 @@ rhoRange = ["25", "90", "9999"]
 
 tagselection = "testRho25v2withNew"
 #define output directory
-DirPath = "Output/RelValProdQCD_Pt_3000_3500_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_04_newCuts/"
+DirPath = "Output/RelValProdQCD_Pt_3000_3500_13__CMSSW_7_3_0_pre1-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_04_newCuts/"
 filename = "NIrej"
 DirName = DirPath+tagselection
 
@@ -258,7 +258,7 @@ listHistos = [
     jetEta,
     discr,
     effVsDiscrCut_discr,
-    #FlavEffVsBEff_discr,
+    FlavEffVsBEff_discr,
     #performance,
     #performanceC,
 
