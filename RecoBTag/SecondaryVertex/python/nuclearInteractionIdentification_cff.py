@@ -50,41 +50,54 @@ nuclearInteractionIdentifier0 = nuclearInteractionCandIdentifier.clone(
 
 nuclearInteractionIdentifier1 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
-		nuclearInteractionIdentifier0.selection,
-		maxNtracks = cms.int32(4),
-		maxMass = cms.double(2.0)
+		nuclearInteractionCandIdentifier.selection,
+		position = cms.vdouble(2.87, 3.0, 3.65, 3.75, 4.1, 4.25, 4.55, 4.7, 7.05, 7.15, 7.45, 7.6, 9.85, 10., 10.35, 10.45)
 	)
 )
 
 nuclearInteractionIdentifier2 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionIdentifier0.selection,
-		minNctau = cms.double(2.5)
+		minNctau = cms.double(2.0)
 	)
 )
 
 nuclearInteractionIdentifier3 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionIdentifier1.selection,
-		minNctau = cms.double(2.5)
+		minNctau = cms.double(2.0)
 	)
 )
 
-nuclearInteractionIdentifier4 = nuclearInteractionIdentifier0.clone(
-	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
+nuclearInteractionIdentifier4 = nuclearInteractionCandIdentifier.clone(
+	selection = cms.PSet(
+		nuclearInteractionIdentifier2.selection,
+		distToNI = cms.double(0.3)
+	)
 )
 
-nuclearInteractionIdentifier5 = nuclearInteractionIdentifier1.clone(
-	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
+nuclearInteractionIdentifier5 = nuclearInteractionCandIdentifier.clone(
+	selection = cms.PSet(
+		nuclearInteractionIdentifier3.selection,
+		distToNI = cms.double(0.3)
+	)
 )
 
-nuclearInteractionIdentifier6 = nuclearInteractionIdentifier2.clone(
-	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
-)
+#nuclearInteractionIdentifier6 = nuclearInteractionIdentifier0.clone(
+	#secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
+#)
 
-nuclearInteractionIdentifier7 = nuclearInteractionIdentifier3.clone(
-	secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
-)
+#nuclearInteractionIdentifier7 = nuclearInteractionIdentifier1.clone(
+	#secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
+#)
+
+#nuclearInteractionIdentifier6 = nuclearInteractionIdentifier2.clone(
+	#secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
+#)
+
+#nuclearInteractionIdentifier7 = nuclearInteractionIdentifier3.clone(
+	#secondaryVertices = cms.InputTag("inclusiveSecondaryVerticesRelaxed")
+#)
 
 # vertex and pfcandidates cleaning steps
 
@@ -94,8 +107,8 @@ vertexAndTracksCleaned2 = vertexAndTracksCandCleaned.clone(veto = "nuclearIntera
 vertexAndTracksCleaned3 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier3")
 vertexAndTracksCleaned4 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier4")
 vertexAndTracksCleaned5 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier5")
-vertexAndTracksCleaned6 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier6")
-vertexAndTracksCleaned7 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier7")
+#vertexAndTracksCleaned6 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier6")
+#vertexAndTracksCleaned7 = vertexAndTracksCandCleaned.clone(veto = "nuclearInteractionIdentifier7")
 
 # re-run IVF
 
@@ -105,8 +118,8 @@ inclusiveVertexFinderCleaned2 = inclusiveCandidateVertexFinder.clone(tracks = cm
 inclusiveVertexFinderCleaned3 = inclusiveCandidateVertexFinder.clone(tracks = cms.InputTag("vertexAndTracksCleaned3"))
 inclusiveVertexFinderCleaned4 = inclusiveCandidateVertexFinder.clone(tracks = cms.InputTag("vertexAndTracksCleaned4"))
 inclusiveVertexFinderCleaned5 = inclusiveCandidateVertexFinder.clone(tracks = cms.InputTag("vertexAndTracksCleaned5"))
-inclusiveVertexFinderCleaned6 = inclusiveCandidateVertexFinder.clone(tracks = cms.InputTag("vertexAndTracksCleaned6"))
-inclusiveVertexFinderCleaned7 = inclusiveCandidateVertexFinder.clone(tracks = cms.InputTag("vertexAndTracksCleaned7"))
+#inclusiveVertexFinderCleaned6 = inclusiveCandidateVertexFinder.clone(tracks = cms.InputTag("vertexAndTracksCleaned6"))
+#inclusiveVertexFinderCleaned7 = inclusiveCandidateVertexFinder.clone(tracks = cms.InputTag("vertexAndTracksCleaned7"))
 
 vertexMergerCleaned0 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned0"))
 vertexMergerCleaned1 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned1"))
@@ -114,8 +127,8 @@ vertexMergerCleaned2 = candidateVertexMerger.clone( secondaryVertices = cms.Inpu
 vertexMergerCleaned3 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned3"))
 vertexMergerCleaned4 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned4"))
 vertexMergerCleaned5 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned5"))
-vertexMergerCleaned6 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned6"))
-vertexMergerCleaned7 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned7"))
+#vertexMergerCleaned6 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned6"))
+#vertexMergerCleaned7 = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderCleaned7"))
 
 trackVertexArbitratorCleaned0 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned0"), secondaryVertices = cms.InputTag("vertexMergerCleaned0"))
 trackVertexArbitratorCleaned1 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned1"), secondaryVertices = cms.InputTag("vertexMergerCleaned1"))
@@ -123,8 +136,8 @@ trackVertexArbitratorCleaned2 = candidateVertexArbitrator.clone(tracks = cms.Inp
 trackVertexArbitratorCleaned3 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned3"), secondaryVertices = cms.InputTag("vertexMergerCleaned3"))
 trackVertexArbitratorCleaned4 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned4"), secondaryVertices = cms.InputTag("vertexMergerCleaned4"))
 trackVertexArbitratorCleaned5 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned5"), secondaryVertices = cms.InputTag("vertexMergerCleaned5"))
-trackVertexArbitratorCleaned6 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned6"), secondaryVertices = cms.InputTag("vertexMergerCleaned6"))
-trackVertexArbitratorCleaned7 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned7"), secondaryVertices = cms.InputTag("vertexMergerCleaned7"))
+#trackVertexArbitratorCleaned6 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned6"), secondaryVertices = cms.InputTag("vertexMergerCleaned6"))
+#trackVertexArbitratorCleaned7 = candidateVertexArbitrator.clone(tracks = cms.InputTag("vertexAndTracksCleaned7"), secondaryVertices = cms.InputTag("vertexMergerCleaned7"))
 
 inclusiveSecondaryVerticesCleaned0 = candidateVertexMerger.clone(
 	secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned0"),
@@ -137,8 +150,8 @@ inclusiveSecondaryVerticesCleaned2 = inclusiveSecondaryVerticesCleaned0.clone(se
 inclusiveSecondaryVerticesCleaned3 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned3"))
 inclusiveSecondaryVerticesCleaned4 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned4"))
 inclusiveSecondaryVerticesCleaned5 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned5"))
-inclusiveSecondaryVerticesCleaned6 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned6"))
-inclusiveSecondaryVerticesCleaned7 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned7"))
+#inclusiveSecondaryVerticesCleaned6 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned6"))
+#inclusiveSecondaryVerticesCleaned7 = inclusiveSecondaryVerticesCleaned0.clone(secondaryVertices = cms.InputTag("trackVertexArbitratorCleaned7"))
 
 # all NI rejection sequences
 
@@ -202,22 +215,22 @@ nuclearInteractionsRemoved5 = cms.Sequence(
 	inclusiveSecondaryVerticesCleaned5
 )
 
-nuclearInteractionsRemoved6 = cms.Sequence(
-	inclusiveCandidateVertexingRelaxed *
-	nuclearInteractionIdentifier6 *
-	vertexAndTracksCleaned6 *
-	inclusiveVertexFinderCleaned6 *
-	vertexMergerCleaned6 *
-	trackVertexArbitratorCleaned6 *
-	inclusiveSecondaryVerticesCleaned6
-)
+#nuclearInteractionsRemoved6 = cms.Sequence(
+	#inclusiveCandidateVertexingRelaxed *
+	#nuclearInteractionIdentifier6 *
+	#vertexAndTracksCleaned6 *
+	#inclusiveVertexFinderCleaned6 *
+	#vertexMergerCleaned6 *
+	#trackVertexArbitratorCleaned6 *
+	#inclusiveSecondaryVerticesCleaned6
+#)
 
-nuclearInteractionsRemoved7 = cms.Sequence(
-	inclusiveCandidateVertexingRelaxed *
-	nuclearInteractionIdentifier7 *
-	vertexAndTracksCleaned7 *
-	inclusiveVertexFinderCleaned7 *
-	vertexMergerCleaned7 *
-	trackVertexArbitratorCleaned7 *
-	inclusiveSecondaryVerticesCleaned7
-)
+#nuclearInteractionsRemoved7 = cms.Sequence(
+	#inclusiveCandidateVertexingRelaxed *
+	#nuclearInteractionIdentifier7 *
+	#vertexAndTracksCleaned7 *
+	#inclusiveVertexFinderCleaned7 *
+	#vertexMergerCleaned7 *
+	#trackVertexArbitratorCleaned7 *
+	#inclusiveSecondaryVerticesCleaned7
+#)
