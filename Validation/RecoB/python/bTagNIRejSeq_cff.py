@@ -8,6 +8,7 @@ from RecoBTag.ImpactParameter.pfImpactParameter_cfi import *
 from RecoBTag.SecondaryVertex.candidateCombinedSecondaryVertexES_cfi import *
 from RecoBTag.SecondaryVertex.pfCombinedSecondaryVertexBJetTags_cfi import *
 from RecoBTag.SecondaryVertex.combinedInclusiveSecondaryVertexBJetTags_cfi import *
+from RecoBTag.SecondaryVertex.nuclearInteractionIdentificationNew_cff import *
 
 
 #======================================================================
@@ -67,15 +68,17 @@ MYbtagSequenceStandardRho9999 = cms.Sequence(
 	softPFElectronsTagInfos
 )
 
-seq = MYbtagSequenceStandardRho25*MYbtagSequenceStandardRho90*MYbtagSequenceStandardRho9999
+
+seq = (MYbtagSequenceStandardRho25 *
+	    # MYbtagSequenceStandardRho90*
+		MYbtagSequenceStandardRho9999)
 
 
 
-from RecoBTag.SecondaryVertex.nuclearInteractionIdentificationNew_cff import *
 
 # NI rejection version 0
 
-for rho in ['Rho25', 'Rho90', 'Rho9999'] :
+for rho in rhoCuts :
 	for i in range(0, Nversion2) :
 		globals()['pfImpactParameterTagInfosCleaned'+rho+'v%s'%i] = pfImpactParameterTagInfos.clone(candidates = "vertexAndTracksCleaned%s"%i)
 		if rho == 'Rho25' : rho2 = ''

@@ -11,7 +11,7 @@ tag =  'POSTLS172_V3::All'
 #Flavour plots for MC: "all" = plots for all jets ; "dusg" = plots for d, u, s, dus, g independently ; not mandatory and any combinations are possible 
 #b, c, light (dusg), non-identified (NI), PU jets plots are always produced
 flavPlots = "allbcldusg"
-ptRanges = cms.vdouble(50.0, 150.0, 500.0, 3000.0)
+ptRanges = cms.vdouble(50.0, 150.0, 500., 1500., 3000.0)
 #Check if jets originate from PU? option recommended (only for MC)
 PUid = True
 #List of taggers and taginfo to be considered (see example in: DQMOffline/RecoB/python/bTagCommon_cff.py)
@@ -23,86 +23,55 @@ tagConfig = cms.VPSet(
             folder = cms.string("CSVIVFv2-StandardRho25")	# standard CSVIVFv2 sequence
         ),
         cms.PSet(
-            bTagGenericAnalysisBlock,
-            label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsRho90"),
-            folder = cms.string("CSVIVFv2-StandardRho90")	# standard CSVIVFv2 sequence
+            bTagCombinedSVAnalysisBlock,
+            ipTagInfos = cms.InputTag("pfImpactParameterTagInfos"),
+            type = cms.string('GenericMVA'),
+            svTagInfos = cms.InputTag("pfInclusiveSecondaryVertexFinderTagInfos"),
+            label = cms.InputTag("candidateCombinedSecondaryVertexV2"),
+            folder = cms.string("CSVIVFv2-StandardRho25")
         ),
+        #cms.PSet(
+            #bTagGenericAnalysisBlock,
+            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsRho90"),
+            #folder = cms.string("CSVIVFv2-StandardRho90")	# standard CSVIVFv2 sequence
+        #),
         cms.PSet(
             bTagGenericAnalysisBlock,
             label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsRho9999"),
             folder = cms.string("CSVIVFv2-StandardRho9999")	# standard CSVIVFv2 sequence
-        )
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsNoMin2D"),
-            #folder = cms.string("CSVIVFv2-NoMin2D")		# standard CSVIVFv2 sequence with removed position cut on SV in pfInclusiveSecondaryVertexFinderTagInfos
-        #),
-        #cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned0"),
-            #folder = cms.string("CSVIVFv2-NICleaned0")	# sequence with NIs removed (version 0, simply positions)
-        #),
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned1"),
-            #folder = cms.string("CSVIVFv2-NICleaned1")	# sequence with NIs removed (version 1, position + mass + ntracks cut)
-        #),
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned2"),
-            #folder = cms.string("CSVIVFv2-NICleaned2")	# sequence with NIs removed (version 2, position + mass + ntracks cut + NI id with relaxed IVF cuts)
-        #),
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned3"),
-            #folder = cms.string("CSVIVFv2-NICleaned3")	# sequence with NIs removed (version 3, only position + NI id with relaxed IVF cuts)
-        #),
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned4"),
-            #folder = cms.string("CSVIVFv2-NICleaned4")	# sequence with NIs removed (version 4, position + nctau cut, NI id with relaxed IVF cuts)
-        #),
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned5"),
-            #folder = cms.string("CSVIVFv2-NICleaned5")	# sequence with NIs removed (version 5, position + mass + ntracks + nctau cut, NI id with relaxed IVF cuts)
-        #),
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned6"),
-            #folder = cms.string("CSVIVFv2-NICleaned6")	# sequence with NIs removed, but with rho=2.5 cut (version 6, simply positions)
-        #),
-		#cms.PSet(
-            #bTagGenericAnalysisBlock,
-            #label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned7"),
-            #folder = cms.string("CSVIVFv2-NICleaned7")	# sequence with NIs removed, but with rho=2.5 cut (version 7, position + mass + ntracks cut + NI id with relaxed IVF cuts)
-        #)
+        ),
+        cms.PSet(
+            bTagCombinedSVAnalysisBlock,
+            ipTagInfos = cms.InputTag("pfImpactParameterTagInfos"),
+            type = cms.string('GenericMVA'),
+            svTagInfos = cms.InputTag("pfInclusiveSecondaryVertexFinderTagInfosRho9999"),
+            label = cms.InputTag("candidateCombinedSecondaryVertexV2"),
+            folder = cms.string("CSVIVFv2-StandardRho9999")
+        ),
 )
 
 from RecoBTag.SecondaryVertex.nuclearInteractionIdentificationNew_cff import Nversion2
+from RecoBTag.SecondaryVertex.nuclearInteractionIdentificationNew_cff import rhoCuts
 
-for i in range(0, Nversion2) :
-	tagConfig.append(
-		cms.PSet(
-			bTagGenericAnalysisBlock,
-			label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleanedRho25v%s"%i),
-			folder = cms.string("CSVIVFv2-NICleanedRho25v%s"%i)	# standard CSVIVFv2 sequence
+for rho in rhoCuts :
+	for i in range(0, Nversion2) :
+		tagConfig.append(
+			cms.PSet(
+				bTagGenericAnalysisBlock,
+				label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned"+rho+"v%s"%i),
+				folder = cms.string("CSVIVFv2-NICleaned"+rho+"v%s"%i)	# standard CSVIVFv2 sequence
+			)
 		)
-	)
-	tagConfig.append(
-		cms.PSet(
-			bTagGenericAnalysisBlock,
-			label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleanedRho90v%s"%i),
-			folder = cms.string("CSVIVFv2-NICleanedRho90v%s"%i)	# standard CSVIVFv2 sequence
+		tagConfig.append(
+			cms.PSet(
+				bTagCombinedSVAnalysisBlock,
+				ipTagInfos = cms.InputTag('pfImpactParameterTagInfosCleaned'+rho+'v%s'%i),
+				type = cms.string('GenericMVA'),
+				svTagInfos = cms.InputTag("pfInclusiveSecondaryVertexFinderTagInfosCleaned"+rho+"v%s"%i),
+				label = cms.InputTag("candidateCombinedSecondaryVertexV2"),
+				folder = cms.string("CSVIVFv2-NICleaned"+rho+"v%s"%i)
+			)
 		)
-	)
-	tagConfig.append(
-		cms.PSet(
-			bTagGenericAnalysisBlock,
-			label = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTagsCleanedRho9999v%s"%i),
-			folder = cms.string("CSVIVFv2-NICleanedRho9999v%s"%i)	# standard CSVIVFv2 sequence
-		)
-	)
 
 """
 end customization
@@ -196,10 +165,10 @@ process.dqmSeq = cms.Sequence(process.ak4GenJetsForPUid * process.patJetGenJetMa
 process.plots = cms.Path(process.bTagSeq * process.dqmSeq)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(9000)
+    input = cms.untracked.int32(1)
 )
 
-version = '04_9000ev_rho25_rho90_rho999_nirej0to10_newCuts'
+version = '05_9000ev_rho25_rho9999_QCD_3000-3500_v0-7'
     
 process.dqmEnv.subSystemFolder = 'BTAG'
 process.dqmSaver.producer = 'DQM'
@@ -209,6 +178,18 @@ process.dqmSaver.saveByRun = cms.untracked.int32(-1)
 process.dqmSaver.saveAtJobEnd =cms.untracked.bool(True) 
 process.dqmSaver.forceRunNumber = cms.untracked.int32(1)
 process.PoolSource.fileNames = [
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/04B42DBE-9F30-E411-94AD-002618FDA208.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/50ED7D89-7730-E411-8B92-0026189437EB.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/5EAF0D89-7730-E411-B9F2-002354EF3BE0.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/704E9FAC-8E30-E411-B25D-0025905A6090.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/88579BFC-7130-E411-AA38-0025905A60B8.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/A2CE9AFE-F230-E411-B364-0025905A60E0.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/AC2985EF-F330-E411-B3E0-0025905B855E.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/D8667945-7830-E411-9672-0025905A6090.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/EAD433E4-F330-E411-919E-0025905A60D0.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/EED73486-7730-E411-BF69-002618943894.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/FC473B93-7730-E411-BF61-0025905A6132.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/FCE83CAD-6F30-E411-8986-0025905A6134.root',
 	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/00753DE2-C730-E411-957F-0025905B85EE.root',
 	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/2C59AFBB-DA30-E411-832E-002590596498.root',
 	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/80BE6D20-DB30-E411-9644-0025905A609A.root',

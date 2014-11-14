@@ -41,17 +41,13 @@ parser.add_option("-B", "--Banner", dest="Banner", default=Banner,
 parser.add_option("-n", "--noRatio", dest="doRatio", default=doRatio,
                   action="store_false", help="if True, ratios plots will be created")
 (options, args) = parser.parse_args()
-print "file for validation", options.valPath, "file for reference", options.refPath
-print "Validation release:", options.ValRel, "Reference release:", options.RefRel
-print "Validation sample:", options.ValSample, "Reference sample:", options.RefSample
-print "Options : batch mode ?", options.batch, "draw legend ?", options.drawLegend, "print banner ?", options.printBanner, "banner is ", options.Banner, "make ratio plots ?", options.doRatio
+#print "file for validation", options.valPath, "file for reference", options.refPath
+#print "Validation release:", options.ValRel, "Reference release:", options.RefRel
+#print "Validation sample:", options.ValSample, "Reference sample:", options.RefSample
+#print "Options : batch mode ?", options.batch, "draw legend ?", options.drawLegend, "print banner ?", options.printBanner, "banner is ", options.Banner, "make ratio plots ?", options.doRatio
 #define the input root files                                                                                                                                                                              
-if options.valPath and options.refPath :
-    fileVal = TFile(options.valPath,"READ")
-    fileRef = TFile(options.refPath,"READ")
-elif options.valPath :
+if options.valPath :
 	fileVal = TFile(options.valPath,"READ")
-	fileRef = None
 #batch mode ?
 if options.batch : ROOT.gROOT.SetBatch()
 # style
@@ -67,13 +63,14 @@ else : title=options.ValRel+"vs"+options.RefRel+" "+options.ValSample+"_vs_"+opt
 for rhocut in rhoRange :
 	for version in range (0, maxRange) :
 		for version2 in range (version, maxRange) :
-			for compTag in ["compStand","compAll", "compRho", "comp2"] :
+			for compTag in ["compStand","compAll", "compRho", "comp2", "comp1"] : #  
 				mapColor = mapColorStandard
 				listTag = ["CSVIVFv2-StandardRho25"]
 				tagselection = "rho"+rhocut+"v"
 				if compTag == "compStand" and rhocut == "25" and version == 0 and version2 == version :
-					listTag.append("CSVIVFv2-StandardRho90")
-					listTag.append("CSVIVFv2-StandardRho9999")
+					listTag = []
+					for comp in rhoRange:
+						listTag.append("CSVIVFv2-StandardRho"+comp)
 					tagselection = "compAllRho"
 				elif compTag == "compAll" and version2 > version+1:
 					for x in range (version, version2+1) :
@@ -91,24 +88,31 @@ for rhocut in rhoRange :
 					listTag.append("CSVIVFv2-NICleanedRho"+rhocut+"v"+str(version))
 					listTag.append("CSVIVFv2-NICleanedRho"+rhocut+"v"+str(version2))
 					tagselection = tagselection+str(version)+"_"+str(version2)
+				elif compTag == "comp1" and version2 == version :
+					listTag.append("CSVIVFv2-NICleanedRho"+rhocut+"v"+str(version))
+					tagselection = tagselection+str(version)
 				else : continue
-				print "\nTAGSELECTION:", tagselection, listTag, '\n'
+				#print "\nTAGSELECTION:", tagselection, listTag, '\n'
 				DirName = DirPath+tagselection
 				c = {}
-				valHistos = {}
-				refHistos ={}
+				saveHistos = {}
 				Histos = {}
-				ratios = {} 
+				ratios = {}
 				#loop over eta an pt bins
 				for b in EtaPtBin :
+					count = -1
 					#loop over the histos
-					perfAll_Val = {}
-					perfAll_Ref = {}
-					perfAll_keys = []
+					perfAll = {}
 					for h in listHistos :
+						h.doNormalization = True
+						#print h
+						#print h.name
+						count += 1
+						compAll = {}
+						compAll_keys = []
+						perfAll_keys = []
 						for f in listFlavors :
-							perfAll_Val[f] = {}
-							if fileRef : perfAll_Ref[f] = {}
+							perfAll[f] = {}
 						#loop over the list of taggers
 						if h.listTagger is not None : listTag=h.listTagger
 						for tag in listTag :
@@ -117,68 +121,93 @@ for rhocut in rhoRange :
 							if h.doPerformance :
 								keyHisto = tag+"_performance_vs_"+h.tagFlavor
 							#loop over the flavours
-							h_Val = {}
-							if fileRef : h_Ref = {}
+							histos = {}
 							passH = False
 							for f in listFlavors :
 								path = pathInFile+tag+"_"+b+"/"+h.name+"_"+tag+"_"+b+f
+								if count > 4 and "CSVIVFv2-StandardRho9999" in tag :
+									path = pathInFile+tag+"-Tag_"+b+"/"+h.name+"_"+tag+"-Tag_"+b+f
 								if "_B_" in path : 
 									path=path.replace("_B_","_"+f+"_")
 									path=path.replace(b+f,b)
 								#print path
 								#get histos
-								h_Val[f] = fileVal.Get(path)
-								if fileRef : h_Ref[f] = fileRef.Get(path)
-								if not h_Val[f] :
+								histos[f] = fileVal.Get(path)
+								if not histos[f] :
 									print "ERROR :", path, "not found in the roofiles, please check the spelling or check if this histogram is present in the rootdile"
 									passH = True
 							if passH : continue
 							#stop if FlavEffVsBEff_?_discr plot for all the taggers
 							if h.name=="FlavEffVsBEff_B_discr" :
 								for f in listFlavors :
-									perfAll_Val[f][tag]=h_Val[f]
-									if fileRef : perfAll_Ref[f][tag]=h_Ref[f]
+									perfAll[f][tag]=histos[f]
+								perfAll_keys.append(tag)
+								continue
+							elif compTag=="comp2" or compTag =="compRho" or compTag == "comp1":
+								for f in listFlavors :
+									compAll[tag+f]=histos[f]
+									perfAll[f][tag]=histos[f]
+									compAll_keys.append(tag+f)
 								perfAll_keys.append(tag)
 								continue
 							#create final histos   
 							if h.doPerformance :
-								valHistos[keyHisto]=graphProducer(plot=h,histos=h_Val,color=mapColor,isVal=True)
-								if fileRef : refHistos[keyHisto]=graphProducer(plot=h,histos=h_Ref,color=mapColor,isVal=False)
+								saveHistos[keyHisto]=graphProducer(plot=h,histos=histos,color=mapColorFlavour)
 							else :    
-								valHistos[keyHisto]=histoProducer(plot=h,histos=h_Val,keys=listFlavors,color=mapColor,isVal=True)
-								if fileRef : refHistos[keyHisto]=histoProducer(plot=h,histos=h_Ref,keys=listFlavors,color=mapColor,isVal=False)
-							if valHistos[keyHisto] is None : continue
-							#if len(valHistos[keyHisto])!=len(refHistos[keyHisto]) : print "ERROR"
+								saveHistos[keyHisto]=histoProducer(plot=h,histos=histos,keys=listFlavors,color=mapColorFlavour)
+							if saveHistos[keyHisto] is None : continue
+							#if len(saveHistos[keyHisto])!=len(refHistos[keyHisto]) : print "ERROR"
 							#compute ratios 
 							if options.doRatio :
 								if h.doPerformance:
-									ratiosList = createRatioFromGraph(valHistos[keyHisto],refHistos[keyHisto])
+									ratiosList = createRatioFromGraph(saveHistos[keyHisto],refHistos[keyHisto])
 								else :
-									ratiosList = createRatio(valHistos[keyHisto],refHistos[keyHisto])
+									ratiosList = createRatio(saveHistos[keyHisto],refHistos[keyHisto])
 								ratios[keyHisto] = ratiosList
 							else :
 								ratiosList = None
 							#set name file
 							histname=h.name+"_"+tag
-							if options.ValSample == options.RefSample : saveName=options.ValRel+"vs"+options.RefRel+"_"+options.ValSample+"_Val_all"
-							elif options.ValRel==options.RefRel : saveName=options.ValRel+"_"+options.ValSample+"_vs_"+options.RefSample+"_Val_all"
-							elif not options.RefSample and not options.RefRel : saveName=options.ValRel+"_"+options.ValSample+"_Val_all"
-							else : saveName=options.ValRel+"vs"+options.RefRel+"_"+options.ValSample+"_vs_"+options.RefSample+"_Val_all"
+							if options.ValSample == options.RefSample : saveName=options.ValRel+"vs"+options.RefRel+"_"+options.ValSample+"_all"
+							elif options.ValRel==options.RefRel : saveName=options.ValRel+"_"+options.ValSample+"_vs_"+options.RefSample+"_all"
+							elif not options.RefSample and not options.RefRel : saveName=options.ValRel+"_"+options.ValSample+"_all"
+							else : saveName=options.ValRel+"vs"+options.RefRel+"_"+options.ValSample+"_vs_"+options.RefSample+"_all"
 							#save canvas
-							c[keyHisto] = savePlots(title=title+tag,dirname=DirName+"/"+b,saveName=histname+"_"+saveName,listFromats=listFromats,plot=h,Histos=valHistos[keyHisto],options=options,ratios=ratiosList,keyHisto=keyHisto,listLegend=listFlavors,legendName=h.legend)
+							c[keyHisto] = savePlots(title=title+tag,dirname=DirName+"/"+b,saveName=histname+"_"+saveName,listFromats=listFromats,plot=h,Histos=saveHistos[keyHisto],options=options,ratios=ratiosList,keyHisto=keyHisto,listLegend=listFlavors,legendName=h.legend)
 						#for FlavEffVsBEff_B_discr
 						if h.name=="FlavEffVsBEff_B_discr" :
-							for f in ["C","DUSG"] :
-								for isVal in [True] :
-									keyHisto=f+str(isVal)
-									#setup the histos
-									if isVal : Histos[keyHisto]=histoProducer(plot=h,histos=perfAll_Val[f],keys=perfAll_keys,color=mapColor,isVal=isVal)
-									else : Histos[keyHisto]=histoProducer(plot=h,histos=perfAll_Ref[f],keys=perfAll_keys,color=mapColor,isVal=isVal)
-									#set name file    
-									if isVal : saveName=options.ValRel+"_"+options.ValSample+"_performance_Bvs"+f+"_"+tagselection
-									else : saveName=options.RefRel+"_"+options.RefSample+"_performance_Bvs"+f+"_"+tagselection
-									#set title
-									if isVal : titleFlav = options.ValRel+"_"+options.ValSample+"_performance_Bvs"+f+"_"+tagselection
-									else : titleFlav = options.RefRel+"_"+options.RefSample+"_performanceBvs"+f+"_"+tagselection
-									#save canvas
-									c[keyHisto] = savePlots(title=titleFlav,dirname=DirName+"/"+b,saveName=h.name+"_"+saveName,listFromats=listFromats,plot=h,Histos=Histos[keyHisto],keyHisto=keyHisto,listLegend=listTag,options=options,legendName=h.legend.replace("FLAV",f))
+							for f in ["DUSG"] :
+								print "FlavEffVsBEff_B_discr keys: ", perfAll_keys
+								keyHisto=f+"perf"
+								#setup the histos
+								#print perfAll_keys
+								Histos[keyHisto]=histoProducer(plot=h,histos=perfAll[f],keys=perfAll_keys,color=mapColor)
+								#set name file    
+								saveName=options.ValRel+"_"+options.ValSample+"_performance_Bvs"+f+"_"+tagselection
+								#set title
+								titleFlav = options.ValRel+"_"+options.ValSample+"_performance_Bvs"+f+"_"+tagselection
+								#save canvas
+								c[keyHisto] = savePlots(title=titleFlav,dirname=DirName+"/"+b,saveName=h.name+"_"+saveName,listFromats=listFromats,plot=h,Histos=Histos[keyHisto],keyHisto=keyHisto,listLegend=listTag,options=options,legendName=h.legend.replace("FLAV",f))
+						elif compTag == "comp2" or compTag == "compRho"  or compTag == "comp1":
+							#print "comp Variables:", compAll_keys
+							keyHisto=h.name+"_"+b+"_"+compTag
+							#setup the histos
+							Histos[keyHisto]=histoProducer(plot=h,histos=compAll,keys=compAll_keys,color=mapColor,drawOption="HIST")
+							#set name file    
+							saveName=options.ValRel+"_"+options.ValSample+"_"+tagselection
+							#set title
+							titleFlav = options.ValRel+"_"+options.ValSample+"_"+tagselection
+							#save canvas
+							c[keyHisto] = savePlots(title=titleFlav,dirname=DirName+"/"+b,saveName=h.name+"_"+saveName,listFromats=listFromats,plot=h,Histos=Histos[keyHisto],keyHisto=keyHisto,listLegend=compAll_keys,options=options,legendName=h.legend,drawOption="HIST")
+							for f in ["B","DUSG"] :
+								#print "ListLegend: ", listTag
+								keyHisto=h.name+"_"+b+"_"+f+"comp"
+								#setup the histos
+								#print perfAll_keys
+								Histos[keyHisto]=histoProducer(plot=h,histos=perfAll[f],keys=perfAll_keys,color=mapColor)
+								#set name file    
+								saveName=options.ValRel+"_"+options.ValSample+"_"+f+"_"+tagselection
+								#set title
+								titleFlav = options.ValRel+"_"+options.ValSample+"_"+f+"_"+tagselection
+								#save canvas
+								c[keyHisto] = savePlots(title=titleFlav,dirname=DirName+"/"+b,saveName=h.name+"_"+saveName,listFromats=listFromats,plot=h,Histos=Histos[keyHisto],keyHisto=keyHisto,listLegend=listTag,options=options,legendName=h.legend, drawOption="HIST")

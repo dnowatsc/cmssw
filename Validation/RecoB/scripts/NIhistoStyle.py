@@ -32,6 +32,7 @@ from ROOT import TGraphErrors
 from ROOT import Double
 
 import Style
+import re
 from NIlistHistos import *
 
 #define the input root files
@@ -46,12 +47,12 @@ RefRel = ""
 ValSample = "QCD_Pt_3000_3500"
 RefSample = ""
 
-maxRange = 11
-rhoRange = ["25", "90", "9999"]
+maxRange = 4
+rhoRange = ["25", "9999"]
 
 tagselection = "testRho25v2withNew"
 #define output directory
-DirPath = "Output/RelValProdQCD_Pt_3000_3500_13__CMSSW_7_3_0_pre1-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_04_newCuts/"
+DirPath = "Output/RelValQCD_FlatPt_15_3000HS_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_01_2_onlyV01/"
 filename = "NIrej"
 DirName = DirPath+tagselection
 
@@ -70,7 +71,9 @@ EtaPtBin =[
     "GLOBAL",
     #"ETA_0-1v4",
     #"ETA_1v4-2v4",
-    "PT_500-3000",
+    "PT_150-500",
+    "PT_500-1500",
+    "PT_1500-3000",
     #"PT_80-120",
     ]
 #list of taggers to look at
@@ -109,7 +112,7 @@ listTag = [
 listFlavors = [
         #"ALL",
         "B",
-        "C",
+        #"C",
         #"G",
         #"DUS",
         "DUSG",
@@ -117,8 +120,8 @@ listFlavors = [
         #"PU"
         ]
 #map for marker color for flav-col and tag-col
-mapColorStandard = {
-    "ALL"  : 4 ,
+mapColorFlavour = {
+	"ALL"  : 4 ,
     "B"    : 3 ,
     "C"    : 1 ,
     "G"    : 2 ,
@@ -126,6 +129,9 @@ mapColorStandard = {
     "DUSG" : 2 ,
     "NI"   : 5 ,
     "PU"   : 6,
+}
+
+mapColorStandard = {
     "CSVIVFv2-StandardRho25"		: 1,
     "CSVIVFv2-StandardRho90"		: 2,
     "CSVIVFv2-StandardRho9999"		: 3,
@@ -175,14 +181,14 @@ mapColorStandard = {
     }
 
 mapColorRhoComp = {
-    "ALL"  : 4 ,
-    "B"    : 3 ,
-    "C"    : 1 ,
-    "G"    : 2 ,
-    "DUS"  : 2 ,
-    "DUSG" : 2 ,
-    "NI"   : 5 ,
-    "PU"   : 6,
+    #"ALL"  : 4 ,
+    #"B"    : 3 ,
+    #"C"    : 1 ,
+    #"G"    : 2 ,
+    #"DUS"  : 2 ,
+    #"DUSG" : 2 ,
+    #"NI"   : 5 ,
+    #"PU"   : 6,
     "CSVIVFv2-StandardRho25"		: 1,
     "CSVIVFv2-StandardRho90"		: 2,
     "CSVIVFv2-StandardRho9999"		: 3,
@@ -232,16 +238,19 @@ mapColorRhoComp = {
 #marker style map for Val/Ref
 markerSize = 1.
 mapMarker = {
-    "Val" : 22,
-    "Ref" :  8
+    "default" : 22,
+    "B" : 22,
+    "DUSG" :  8
     }
 mapLineWidth = {
-    "Val" : 3,
-    "Ref" : 2
+    "default" : 3,
+    "B" : 2,
+    "DUSG" : 2
     }
 mapLineStyle = {
-    "Val" : 2,
-    "Ref" : 1
+    "default" : 2,
+    "B" : 2,
+    "DUSG" : 1
     }
 #choose the formats to save the plots 
 listFromats = [
@@ -259,52 +268,37 @@ listHistos = [
     discr,
     effVsDiscrCut_discr,
     FlavEffVsBEff_discr,
-    #performance,
-    #performanceC,
-
-    #IP,
-    #IPe,
-    #IPs,
-    #NTracks,
-    #decayLength,
-    #distToJetAxis,
-    #NHits,
-    #NPixelHits,
-    #NormChi2,
-    #trackPt,
-
-
-    #flightDist3Dval,
-    #flightDist3Dsig,
-    #jetNSecondaryVertices,
-    
-    #vertexMass,
-    #vertexNTracks,
-    #vertexJetDeltaR,
-    #vertexEnergyRatio,
-
-    #vertexCategory,
-    #trackSip3dVal,
-    #trackSip3dSig,
-    #trackSip3dSigAboveCharm,
-    #trackDeltaR,
-    #trackEtaRel,
-    #trackDecayLenVal,
-    #trackSumJetDeltaR,
-    #trackJetDist,
-    #trackSumJetEtRatio,
-    #trackPtRel,
-    #trackPtRatio,
-    #trackMomentum,
-    #trackPPar,
-    #trackPParRatio,
+    flightDist3Dval,
+    flightDist3Dsig,
+    flightDist2Dval,
+    flightDist2Dsig,
+    jetNSecondaryVertices,
+    vertexCategory
     ]
 
+for i in vertexMass : listHistos.append(i)
+for i in vertexNTracks : listHistos.append(i)
+for i in vertexJetDeltaR : listHistos.append(i)
+for i in vertexEnergyRatio : listHistos.append(i)
+for i in trackSip3dVal : listHistos.append(i)
+for i in trackSip3dSig : listHistos.append(i)
+#for i in trackSip3dSigAboveCharm : listHistos.append(i)
+for i in trackDeltaR : listHistos.append(i)
+#for i in trackEtaRel : listHistos.append(i)
+#for i in trackDecayLenVal : listHistos.append(i)
+for i in trackSumJetDeltaR : listHistos.append(i)
+#for i in trackJetDist : listHistos.append(i)
+for i in trackSumJetEtRatio : listHistos.append(i)
+for i in trackPtRel : listHistos.append(i)
+for i in trackPtRatio : listHistos.append(i)
+for i in trackMomentum : listHistos.append(i)
+#for i in trackPPar : listHistos.append(i)
+#for i in trackPParRatio : listHistos.append(i)
+
 #methode to do a plot from histos       
-def histoProducer(plot,histos,keys,color,isVal=True):
+def histoProducer(plot,histos,keys,color,drawOption=""):
     if histos is None : return
-    if isVal : sample = "Val"
-    else : sample = "Ref"
+    marker = "default"
     outhistos = []
     minY=9999.
     maxY=0.
@@ -312,6 +306,8 @@ def histoProducer(plot,histos,keys,color,isVal=True):
     for k in keys :
         #Binning
         #minMap[k] = histos[k].GetMinimum(0.)
+        for m in mapMarker :
+			if m in k : marker = m
         if plot.binning and len(plot.binning)==3 :
             histos[k].SetBins(plot.binning[0],plot.binning[1],plot.binning[2])
         elif plot.binning and len(plot.binning)==2 :
@@ -327,13 +323,17 @@ def histoProducer(plot,histos,keys,color,isVal=True):
         if plot.Rebin and plot.Rebin > 0 :
             histos[k].Rebin(plot.Rebin)
         #Style
-        histos[k].SetLineColor(color[k])
-        histos[k].SetMarkerColor(color[k])
+        for c in color :
+			if c in k :
+				col = c
+				#print "Color search: ", c, k, color[col]
+        histos[k].SetLineColor(color[col])
+        histos[k].SetMarkerColor(color[col])
         histos[k].SetMarkerSize(markerSize)
-        histos[k].SetMarkerStyle(mapMarker[sample])
+        histos[k].SetMarkerStyle(mapMarker[marker])
         if drawOption == "HIST" :
-            histos[k].SetLineWidth(mapLineWidth[sample])
-            histos[k].SetLineStyle(mapLineStyle[sample])
+            histos[k].SetLineWidth(mapLineWidth[marker])
+            histos[k].SetLineStyle(mapLineStyle[marker])
         #compute errors
         histos[k].Sumw2()
         #do the norm
@@ -345,7 +345,7 @@ def histoProducer(plot,histos,keys,color,isVal=True):
         if histos[k].GetMinimum(0.) < minY :
             minY = histos[k].GetMinimum(0.)
         #get Y max
-        if ("FlavEffVsBEff" in histos[k].GetName()) : print "\n"+histos[k].GetName()+"   MIN Y: "+str(histos[k].GetMinimum(0.))+"  minY: "+str(minY)+"\n"
+        #if ("FlavEffVsBEff" in histos[k].GetName()) : print "\n"+histos[k].GetName()+"   MIN Y: "+str(histos[k].GetMinimum(0.))+"  minY: "+str(minY)+"\n"
         if histos[k].GetBinContent(histos[k].GetMaximumBin()) > maxY :
             maxY = histos[k].GetBinContent(histos[k].GetMaximumBin())+histos[k].GetBinError(histos[k].GetMaximumBin())
         #Axis
@@ -361,10 +361,9 @@ def histoProducer(plot,histos,keys,color,isVal=True):
     return outhistos        
 
 #method to do a plot from a graph
-def graphProducer(plot,histos,color,tagFlav="B",mistagFlav=["C","DUSG"],isVal=True):
+def graphProducer(plot,histos,color,tagFlav="B",mistagFlav=["C","DUSG"]):
     if histos is None : return
-    if isVal : sample = "Val"
-    else : sample = "Ref"
+    marker = "default"
     #define graphs
     g = {}
     g_out = []
@@ -415,7 +414,7 @@ def graphProducer(plot,histos,color,tagFlav="B",mistagFlav=["C","DUSG"],isVal=Tr
     for f in listFlavors :
         if f not in mistagFlav : continue
         g[tagFlav+f].SetLineColor(color[f])
-        g[tagFlav+f].SetMarkerStyle(mapMarker[sample])
+        g[tagFlav+f].SetMarkerStyle(mapMarker[marker])
         g[tagFlav+f].SetMarkerColor(color[f])
         g[tagFlav+f].SetMarkerSize(markerSize)
         g_out.append(g[tagFlav+f])
@@ -436,7 +435,7 @@ def graphProducer(plot,histos,color,tagFlav="B",mistagFlav=["C","DUSG"],isVal=Tr
     return g_out 
 
 #method to draw the plot and save it
-def savePlots(title,dirname,saveName,listFromats,plot,Histos,keyHisto,listLegend,options,ratios=None,legendName="") :
+def savePlots(title,dirname,saveName,listFromats,plot,Histos,keyHisto,listLegend,options,ratios=None,legendName="",drawOption="") :
     #create canvas
     c = {}
     pads = {}
@@ -457,7 +456,7 @@ def savePlots(title,dirname,saveName,listFromats,plot,Histos,keyHisto,listLegend
     if plot.grid : pads["hist"].SetGrid()
     #legend
     if plot.legPos: leg = TLegend(plot.legPos[0], plot.legPos[1], plot.legPos[2], plot.legPos[3])
-    else : leg = TLegend(0.6,0.4,0.8,0.6) # 0.6,0.4,0.8,0.6
+    else : leg = TLegend(0.5,0.7,0.7,0.9) # 0.6,0.4,0.8,0.6
     leg.SetMargin(0.12)
     leg.SetTextSize(0.025)
     leg.SetFillColor(10)

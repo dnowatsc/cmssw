@@ -20,8 +20,8 @@ from RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff import *
 # IVF run with relaxed cuts to identify more NIs
 
 inclusiveVertexFinderRelaxed = inclusiveCandidateVertexFinder.clone(
-	maximumLongitudinalImpactParameter = 3.0,
-	vertexMinAngleCosine = 0.7
+	maximumLongitudinalImpactParameter = 25.0,
+	vertexMinAngleCosine = 0.
 )
 
 vertexMergerRelaxed = candidateVertexMerger.clone( secondaryVertices = cms.InputTag("inclusiveVertexFinderRelaxed") )
@@ -38,95 +38,105 @@ inclusiveCandidateVertexingRelaxed = cms.Sequence(inclusiveVertexFinderRelaxed*v
 
 # NI identifiers
 
-Nversion =  11
-Nversion2 = Nversion
+Nversion =  0
+Nversion2 = 2*Nversion
+rhoCuts = ['Rho25', 'Rho9999']
 
 nuclearInteractionIdentifier0 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionCandIdentifier.selection,
-		position = cms.vdouble(2.65, 3.22, 3.52, 5.11, 6.64, 8.01, 9.53, 10.64)
+		position = cms.vdouble(2.65, 3.22, 3.52, 5.11, 6.64, 8.01, 9.53, 10.64),
+		minNctau = cms.double(2.0)
 	)
 )
 
 nuclearInteractionIdentifier1 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionCandIdentifier.selection,
-		position = cms.vdouble(2.87, 3.0, 3.65, 3.75, 4.1, 4.25, 4.55, 4.7, 7.05, 7.15, 7.45, 7.6, 9.85, 10., 10.35, 10.45)
+		position = cms.vdouble(2.87, 3.0, 3.65, 3.75, 4.1, 4.25, 4.55, 4.7, 7.05, 7.15, 7.45, 7.6, 9.85, 10., 10.35, 10.45),
+		minNctau = cms.double(2.0)
 	)
 )
 
 nuclearInteractionIdentifier2 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionIdentifier0.selection,
-		minNctau = cms.double(2.0)
+		minNtracks = cms.int32(3),
+		minMass = cms.double(2.0)
 	)
 )
 
 nuclearInteractionIdentifier3 = nuclearInteractionCandIdentifier.clone(
 	selection = cms.PSet(
 		nuclearInteractionIdentifier1.selection,
-		minNctau = cms.double(2.0)
+		minNtracks = cms.int32(3),
+		minMass = cms.double(2.0)		
 	)
 )
 
-nuclearInteractionIdentifier4 = nuclearInteractionCandIdentifier.clone(
-	selection = cms.PSet(
-		nuclearInteractionIdentifier2.selection,
-		distToNI = cms.double(0.3)
-	)
-)
+#nuclearInteractionIdentifier5 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier1.selection,
+	#)
+#)
 
-nuclearInteractionIdentifier5 = nuclearInteractionCandIdentifier.clone(
-	selection = cms.PSet(
-		nuclearInteractionIdentifier3.selection,
-		distToNI = cms.double(0.3)
-	)
-)
+#nuclearInteractionIdentifier6 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier2.selection,
+	#)
+#)
 
-nuclearInteractionIdentifier6 = nuclearInteractionCandIdentifier.clone(
-	selection = cms.PSet(
-		nuclearInteractionIdentifier1.selection,
-		maxNtracks = cms.int32(4),
-		maxMass = cms.double(2.0)
-	)
-)
+#nuclearInteractionIdentifier5 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier3.selection,
+		#distToNI = cms.double(0.3)
+	#)
+#)
 
-nuclearInteractionIdentifier7 = nuclearInteractionCandIdentifier.clone(
-	selection = cms.PSet(
-		nuclearInteractionIdentifier2.selection,
-		maxNtracks = cms.int32(4),
-		maxMass = cms.double(2.0)
-	)
-)
+#nuclearInteractionIdentifier6 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier1.selection,
+		#maxNtracks = cms.int32(4),
+		#maxMass = cms.double(2.0)
+	#)
+#)
 
-nuclearInteractionIdentifier8 = nuclearInteractionCandIdentifier.clone(
-	selection = cms.PSet(
-		nuclearInteractionIdentifier3.selection,
-		maxNtracks = cms.int32(4),
-		maxMass = cms.double(2.0)
-	)
-)
+#nuclearInteractionIdentifier7 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier2.selection,
+		#maxNtracks = cms.int32(4),
+		#maxMass = cms.double(2.0)
+	#)
+#)
 
-nuclearInteractionIdentifier9 = nuclearInteractionCandIdentifier.clone(
-	selection = cms.PSet(
-		nuclearInteractionIdentifier4.selection,
-		maxNtracks = cms.int32(4),
-		maxMass = cms.double(2.0)
-	)
-)
+#nuclearInteractionIdentifier8 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier3.selection,
+		#maxNtracks = cms.int32(4),
+		#maxMass = cms.double(2.0)
+	#)
+#)
 
-nuclearInteractionIdentifier10 = nuclearInteractionCandIdentifier.clone(
-	selection = cms.PSet(
-		nuclearInteractionIdentifier5.selection,
-		maxNtracks = cms.int32(4),
-		maxMass = cms.double(2.0)
-	)
-)
+#nuclearInteractionIdentifier9 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier4.selection,
+		#maxNtracks = cms.int32(4),
+		#maxMass = cms.double(2.0)
+	#)
+#)
+
+#nuclearInteractionIdentifier10 = nuclearInteractionCandIdentifier.clone(
+	#selection = cms.PSet(
+		#nuclearInteractionIdentifier5.selection,
+		#maxNtracks = cms.int32(4),
+		#maxMass = cms.double(2.0)
+	#)
+#)
 
 
 
-#for i in range(0, Nversion) :
-	#globals()['nuclearInteractionIdentifier%s'%(i+Nversion)] = globals()['nuclearInteractionIdentifier%s'%i].clone(secondaryVertices = "inclusiveSecondaryVerticesRelaxed")
+for i in range(0, Nversion) :
+	globals()['nuclearInteractionIdentifier%s'%(i+Nversion)] = globals()['nuclearInteractionIdentifier%s'%i].clone(secondaryVertices = "inclusiveSecondaryVerticesRelaxed")
 
 # vertex and pfcandidates cleaning steps
 
@@ -151,16 +161,16 @@ for i in range(0, Nversion) :
 		globals()['inclusiveSecondaryVerticesCleaned%s'%i]
 	)
 	
-#for i in range(Nversion, Nversion2) :
-	#globals()['nuclearInteractionsRemoved%s'%i] = cms.Sequence(
-		#inclusiveCandidateVertexingRelaxed *
-		#globals()['nuclearInteractionIdentifier%s'%i] *
-		#globals()['vertexAndTracksCleaned%s'%i] *
-		#globals()['inclusiveVertexFinderCleaned%s'%i] *
-		#globals()['vertexMergerCleaned%s'%i] *
-		#globals()['trackVertexArbitratorCleaned%s'%i] *
-		#globals()['inclusiveSecondaryVerticesCleaned%s'%i]
-	#)
+for i in range(Nversion, Nversion2) :
+	globals()['nuclearInteractionsRemoved%s'%i] = cms.Sequence(
+		inclusiveCandidateVertexingRelaxed *
+		globals()['nuclearInteractionIdentifier%s'%i] *
+		globals()['vertexAndTracksCleaned%s'%i] *
+		globals()['inclusiveVertexFinderCleaned%s'%i] *
+		globals()['vertexMergerCleaned%s'%i] *
+		globals()['trackVertexArbitratorCleaned%s'%i] *
+		globals()['inclusiveSecondaryVerticesCleaned%s'%i]
+	)
 	
 	
 
