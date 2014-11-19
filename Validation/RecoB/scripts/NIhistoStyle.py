@@ -44,15 +44,15 @@ fileNameRef = ""
 ValRel = "730pre1"
 RefRel = ""
 #define the sample labels
-ValSample = "QCD_Pt_3000_3500"
+ValSample = "QCD_flat_15-3000"
 RefSample = ""
 
-maxRange = 4
+maxRange = 6
 rhoRange = ["25", "9999"]
 
 tagselection = "testRho25v2withNew"
 #define output directory
-DirPath = "Output/RelValQCD_FlatPt_15_3000HS_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_01_2_onlyV01/"
+DirPath = "Output/RelValQCD_FlatPt_15_3000HS_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_02/"
 filename = "NIrej"
 DirName = DirPath+tagselection
 
@@ -278,20 +278,22 @@ listHistos = [
 
 for i in vertexMass : listHistos.append(i)
 for i in vertexNTracks : listHistos.append(i)
-for i in vertexJetDeltaR : listHistos.append(i)
-for i in vertexEnergyRatio : listHistos.append(i)
+#for i in vertexJetDeltaR : listHistos.append(i)		# no significant changes for NI rejection; also not high discrimination power
+#for i in vertexEnergyRatio : listHistos.append(i)		# no significant changes for NI rejection
 for i in trackSip3dVal : listHistos.append(i)
 for i in trackSip3dSig : listHistos.append(i)
+for i in trackSip2dVal : listHistos.append(i)
+for i in trackSip2dSig : listHistos.append(i)
 #for i in trackSip3dSigAboveCharm : listHistos.append(i)
-for i in trackDeltaR : listHistos.append(i)
+#for i in trackDeltaR : listHistos.append(i)			# no significant changes for NI rejection; also not high discrimination power
 #for i in trackEtaRel : listHistos.append(i)
 #for i in trackDecayLenVal : listHistos.append(i)
-for i in trackSumJetDeltaR : listHistos.append(i)
+#for i in trackSumJetDeltaR : listHistos.append(i)		# no significant changes for NI rejection; also not high discrimination power
 #for i in trackJetDist : listHistos.append(i)
-for i in trackSumJetEtRatio : listHistos.append(i)
-for i in trackPtRel : listHistos.append(i)
-for i in trackPtRatio : listHistos.append(i)
-for i in trackMomentum : listHistos.append(i)
+#for i in trackSumJetEtRatio : listHistos.append(i)	# no significant changes for NI rejection; also not high discrimination power
+#for i in trackPtRel : listHistos.append(i)			# no significant changes for NI rejection; also not high discrimination power
+#for i in trackPtRatio : listHistos.append(i)			# no significant changes for NI rejection; also not high discrimination power
+#for i in trackMomentum : listHistos.append(i)			# not filled but could be important
 #for i in trackPPar : listHistos.append(i)
 #for i in trackPParRatio : listHistos.append(i)
 
