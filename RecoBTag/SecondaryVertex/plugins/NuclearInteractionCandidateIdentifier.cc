@@ -15,6 +15,16 @@
 #include "RecoVertex/VertexPrimitives/interface/ConvertToFromReco.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
+#include "DataFormats/GeometryVector/interface/GlobalVector.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/GlobalError.h"
+
+#include <set>
+
 
 
 
@@ -65,9 +75,12 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 	// 		event.getByLabel(beamSpotCollection, beamSpot);
 	
 	for(unsigned int ivtx=0; ivtx < secondaryVertices->size(); ivtx++){
+// 		std::cout << std::endl << "======NEW VERTEX========" << std::endl << std::endl;
 		const reco::VertexCompositePtrCandidate & sv = (*secondaryVertices)[ivtx];
-		// 			GlobalPoint ppv(pv.position().x(),pv.position().y(),pv.position().z());
-		Point ssv(sv.vx(),sv.vy(),sv.vz());
+		// 			GlobalPoint pvPos(pv.position().x(),pv.position().y(),pv.position().z());
+		GlobalPoint svPos(sv.vx(),sv.vy(),sv.vz());
+		
+// 		if (svPos.rho() != gsv.perp()) std::cout << "Rho values are not equal, svPos.rho()-gsv.perp() = " << svPos.rho()-gsv.perp() << std::endl;
 		float mass=sv.mass();
 		
 		bool isNI = false;
@@ -78,29 +91,29 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 			std::vector<double> layerCuts = selectionCriteria.getParameter<std::vector<double> >("position");
 			
 			for (unsigned int iLayer = 0; iLayer < layerCuts.size(); ++iLayer){
-				if (iLayer % 2 == 0 && ssv.rho() >= layerCuts[iLayer]) isNI = true;
-				if (iLayer % 2 != 0 && ssv.rho() > layerCuts[iLayer]) isNI = false;					
+				if (iLayer % 2 == 0 && svPos.perp() >= layerCuts[iLayer]) isNI = true;
+				if (iLayer % 2 != 0 && svPos.perp() > layerCuts[iLayer]) isNI = false;					
 			}
 			
 // 			if (isNI)
-// 				std::cout << "NI identified at rho = " << ssv.rho() << " in event " << event.id() << std::endl;
+// 				std::cout << "NI identified at rho = " << svPos.rho() << " in event " << event.id() << std::endl;
 		}
 		
 		// if it is close to detector material, check for other criteria
 		
 		if (selectionCriteria.exists("maxZ") && isNI){
-			float z = std::abs(ssv.z());
+			float z = std::abs(svPos.z());
 			double maxZ = selectionCriteria.getParameter<double>("maxZ");
 			if (z > maxZ) isNI = false;
 		}
 		
 		if (selectionCriteria.exists("minNctau") && isNI){
 			const reco::Vertex &pv = (*primaryVertices)[0];
-			Point ppv(pv.position().x(),pv.position().y(),pv.position().z());
+			GlobalPoint pvPos(pv.position().x(),pv.position().y(),pv.position().z());
 			float pt=sv.pt();
 			float gamma=pt/mass;
-			Vector flightDir = ssv-ppv;
-			float flightDistance2D = flightDir.rho();
+			GlobalVector flightDir = svPos-pvPos;
+			float flightDistance2D = flightDir.perp();
 			float Bctau = 0.05;		// c*tau for B hadron
 			
 			float nctau = flightDistance2D/(gamma*Bctau);	// number of c*taus for potential B hadron
@@ -112,24 +125,100 @@ void NuclearInteractionCandidateIdentifier::produce(edm::Event &event, const edm
 			double minMass = selectionCriteria.getParameter<double>("minMass");
 			if (mass < minMass) isNI = false;				
 		}
+		
 		if (selectionCriteria.exists("maxMass") && isNI){
 			double maxMass = selectionCriteria.getParameter<double>("maxMass");
 			if (mass > maxMass) isNI = false;				
 		}
+		
 		if (selectionCriteria.exists("minNtracks") && isNI){
 			int ntracks = sv.numberOfDaughters();
 			int minNtracks = selectionCriteria.getParameter<int>("minNtracks");
 			if (ntracks < minNtracks) isNI = false;				
 		}
+		
 		if (selectionCriteria.exists("maxNtracks") && isNI){
 			int ntracks = sv.numberOfDaughters();
 			int maxNtracks = selectionCriteria.getParameter<int>("maxNtracks");
 			if (ntracks > maxNtracks) isNI = false;				
 		}
 		
+		if (selectionCriteria.exists("minTrack3DipSig") && isNI){
+			
+			double minTrack3DipSig = selectionCriteria.getParameter<double>("minTrack3DipSig");
+			
+			edm::ESHandle<TransientTrackBuilder> builder;
+			es.get<TransientTrackRecord>().get("TransientTrackBuilder", builder);
+			
+			const reco::Vertex &primVert = (*primaryVertices)[0];
+			
+			GlobalPoint svPos(sv.vx(),sv.vy(),sv.vz());
+			GlobalPoint pvPos(primVert.position().x(), primVert.position().y(), primVert.position().z());
+			GlobalVector flightDirection = svPos-pvPos;
+			
+			std::set<double> track3Dips;
+			for (size_t iDaughter = 0; iDaughter != sv.numberOfSourceCandidatePtrs(); ++iDaughter){
+				
+				reco::CandidatePtr trackCand = sv.sourceCandidatePtr(iDaughter);
+				reco::TransientTrack transientTrack = builder->build(trackCand);
+			
+				Measurement1D ip3d = IPTools::signedImpactParameter3D(transientTrack, flightDirection, primVert).second;
+// 				Measurement1D ip2d = IPTools::signedTransverseImpactParameter(transientTrack, flightDirection, primVert).second;
+				track3Dips.insert(ip3d.significance());
+			}
+			
+// 			std::cout << "Vertex track3Dips: ";
+// 			for (std::set<double>::const_iterator i = track3Dips.begin(); i != track3Dips.end(); ++i)
+// 				std::cout << *i << " ";
+			
+// 			std::cout << std::endl;
+			
+			double highestTrackSig = *track3Dips.end();
+			
+			if (highestTrackSig < minTrack3DipSig) isNI = false;
+		}
+		
+		if (selectionCriteria.exists("maxTrack3DipSig") && isNI){
+			
+			double maxTrack3DipSig = selectionCriteria.getParameter<double>("maxTrack3DipSig");
+			
+			edm::ESHandle<TransientTrackBuilder> builder;
+			es.get<TransientTrackRecord>().get("TransientTrackBuilder", builder);
+			
+			const reco::Vertex &primVert = (*primaryVertices)[0];
+			
+			GlobalPoint svPos(sv.vx(),sv.vy(),sv.vz());
+			GlobalPoint pvPos(primVert.position().x(), primVert.position().y(), primVert.position().z());
+			GlobalVector flightDirection = svPos-pvPos;
+			
+			std::set<double> track3Dips;
+			for (size_t iDaughter = 0; iDaughter != sv.numberOfSourceCandidatePtrs(); ++iDaughter){
+				
+				reco::CandidatePtr trackCand = sv.sourceCandidatePtr(iDaughter);
+				reco::TransientTrack transientTrack = builder->build(trackCand);
+			
+				Measurement1D ip3d = IPTools::signedImpactParameter3D(transientTrack, flightDirection, primVert).second;
+// 				Measurement1D ip2d = IPTools::signedTransverseImpactParameter(transientTrack, flightDirection, primVert).second;
+				track3Dips.insert(ip3d.significance());
+			}
+			
+// 			std::cout << "Vertex track3Dips: ";
+// 			for (std::set<double>::const_iterator i = track3Dips.begin(); i != track3Dips.end(); ++i)
+// 				std::cout << *i << " ";
+			
+// 			std::cout << std::endl;
+			
+			double highestTrackSig = *track3Dips.end();
+			
+			if (highestTrackSig > maxTrack3DipSig) isNI = false;
+		}	
+		
+		
 		if(isNI) {
 			niVertices->push_back(secondaryVertices->ptrAt(ivtx));
 		}
+		
+		
 		
 	}
 	

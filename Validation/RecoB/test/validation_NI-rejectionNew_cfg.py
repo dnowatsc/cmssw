@@ -16,6 +16,8 @@ ptRanges = cms.vdouble(50.0, 150.0, 500., 1500., 3000.0)
 PUid = True
 #List of taggers and taginfo to be considered (see example in: DQMOffline/RecoB/python/bTagCommon_cff.py)
 from DQMOffline.RecoB.bTagCommon_cff import *
+from DQMOffline.RecoB.bTagCombinedSVAnalysisNew_cff import *	# with larger x-ranges for some vertexFlightDistance plots
+
 tagConfig = cms.VPSet(
         cms.PSet(
             bTagGenericAnalysisBlock,
@@ -23,7 +25,7 @@ tagConfig = cms.VPSet(
             folder = cms.string("CSVIVFv2-StandardRho25")	# standard CSVIVFv2 sequence
         ),
         cms.PSet(
-            bTagCombinedSVAnalysisBlock,
+            bTagCombinedSVAnalysisBlockNew,
             ipTagInfos = cms.InputTag("pfImpactParameterTagInfos"),
             type = cms.string('GenericMVA'),
             svTagInfos = cms.InputTag("pfInclusiveSecondaryVertexFinderTagInfos"),
@@ -41,7 +43,7 @@ tagConfig = cms.VPSet(
             folder = cms.string("CSVIVFv2-StandardRho9999")	# standard CSVIVFv2 sequence
         ),
         cms.PSet(
-            bTagCombinedSVAnalysisBlock,
+            bTagCombinedSVAnalysisBlockNew,
             ipTagInfos = cms.InputTag("pfImpactParameterTagInfos"),
             type = cms.string('GenericMVA'),
             svTagInfos = cms.InputTag("pfInclusiveSecondaryVertexFinderTagInfosRho9999"),
@@ -64,7 +66,7 @@ for rho in rhoCuts :
 		)
 		tagConfig.append(
 			cms.PSet(
-				bTagCombinedSVAnalysisBlock,
+				bTagCombinedSVAnalysisBlockNew,
 				ipTagInfos = cms.InputTag('pfImpactParameterTagInfosCleaned'+rho+'v%s'%i),
 				type = cms.string('GenericMVA'),
 				svTagInfos = cms.InputTag("pfInclusiveSecondaryVertexFinderTagInfosCleaned"+rho+"v%s"%i),
@@ -116,6 +118,7 @@ process.flavourSeq = cms.Sequence(
 
 #Validation sequence
 process.load("Validation.RecoB.bTagAnalysis_cfi")
+process.bTagValidation.applyPtHatWeight = True
 process.bTagValidation.jetMCSrc = 'AK4byValAlgo'
 process.bTagValidation.tagConfig = tagConfig
 process.bTagHarvestMC.tagConfig = tagConfig
@@ -165,10 +168,10 @@ process.dqmSeq = cms.Sequence(process.ak4GenJetsForPUid * process.patJetGenJetMa
 process.plots = cms.Path(process.bTagSeq * process.dqmSeq)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1)
+    input = cms.untracked.int32(-1)
 )
 
-version = '05_9000ev_rho25_rho9999_QCD_3000-3500_v0-7'
+version = '02_50000ev_rho25_rho9999_QCD_flat_15-3000_v0-5'
     
 process.dqmEnv.subSystemFolder = 'BTAG'
 process.dqmSaver.producer = 'DQM'
@@ -178,22 +181,22 @@ process.dqmSaver.saveByRun = cms.untracked.int32(-1)
 process.dqmSaver.saveAtJobEnd =cms.untracked.bool(True) 
 process.dqmSaver.forceRunNumber = cms.untracked.int32(1)
 process.PoolSource.fileNames = [
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/04B42DBE-9F30-E411-94AD-002618FDA208.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/50ED7D89-7730-E411-8B92-0026189437EB.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/5EAF0D89-7730-E411-B9F2-002354EF3BE0.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/704E9FAC-8E30-E411-B25D-0025905A6090.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/88579BFC-7130-E411-AA38-0025905A60B8.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/A2CE9AFE-F230-E411-B364-0025905A60E0.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/AC2985EF-F330-E411-B3E0-0025905B855E.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/D8667945-7830-E411-9672-0025905A6090.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/EAD433E4-F330-E411-919E-0025905A60D0.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/EED73486-7730-E411-BF69-002618943894.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/FC473B93-7730-E411-BF61-0025905A6132.root',
-	#'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/FCE83CAD-6F30-E411-8986-0025905A6134.root',
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/00753DE2-C730-E411-957F-0025905B85EE.root',
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/2C59AFBB-DA30-E411-832E-002590596498.root',
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/80BE6D20-DB30-E411-9644-0025905A609A.root',
-	'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/BA1A0B52-C630-E411-B8D5-002618943896.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/04B42DBE-9F30-E411-94AD-002618FDA208.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/50ED7D89-7730-E411-8B92-0026189437EB.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/5EAF0D89-7730-E411-B9F2-002354EF3BE0.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/704E9FAC-8E30-E411-B25D-0025905A6090.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/88579BFC-7130-E411-AA38-0025905A60B8.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/A2CE9AFE-F230-E411-B364-0025905A60E0.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/AC2985EF-F330-E411-B3E0-0025905B855E.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/D8667945-7830-E411-9672-0025905A6090.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/EAD433E4-F330-E411-919E-0025905A60D0.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/EED73486-7730-E411-BF69-002618943894.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/FC473B93-7730-E411-BF61-0025905A6132.root',
+	'/store/relval/CMSSW_7_2_0_pre5/RelValQCD_FlatPt_15_3000HS_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/FCE83CAD-6F30-E411-8986-0025905A6134.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/00753DE2-C730-E411-957F-0025905B85EE.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/2C59AFBB-DA30-E411-832E-002590596498.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/80BE6D20-DB30-E411-9644-0025905A609A.root',
+	#'/store/relval/CMSSW_7_2_0_pre5/RelValProdQCD_Pt_3000_3500_13/GEN-SIM-RECO/POSTLS172_V3-v1/00000/BA1A0B52-C630-E411-B8D5-002618943896.root',
 	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_1.root',
 	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_10.root',
 	#'/store/user/arizzi/RelValQCD_Pt_3000_3500_13/ClusterSplitting_test1/141026_190335/0000/reco-split_RAW2DIGI_RECO_11.root',
