@@ -44,7 +44,7 @@ fileNameRef = ""
 ValRel = "730pre1"
 RefRel = ""
 #define the sample labels
-ValSample = "QCD_flat_15-3000"
+ValSample = "QCD_80-120"
 RefSample = ""
 
 maxRange = 6
@@ -52,7 +52,7 @@ rhoRange = ["25", "9999"]
 
 tagselection = "testRho25v2withNew"
 #define output directory
-DirPath = "Output/RelValQCD_FlatPt_15_3000HS_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_02/"
+DirPath = "Output/RelValQCD_Pt_80_120_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_01/"
 filename = "NIrej"
 DirName = DirPath+tagselection
 
@@ -72,8 +72,8 @@ EtaPtBin =[
     #"ETA_0-1v4",
     #"ETA_1v4-2v4",
     "PT_150-500",
-    "PT_500-1500",
-    "PT_1500-3000",
+    #"PT_500-1500",
+    #"PT_1500-3000",
     #"PT_80-120",
     ]
 #list of taggers to look at

@@ -63,7 +63,7 @@ else : title=options.ValRel+"vs"+options.RefRel+" "+options.ValSample+"_vs_"+opt
 for rhocut in rhoRange :
 	for version in range (0, maxRange) :
 		for version2 in range (version, maxRange) :
-			for compTag in ["compStand","compAll", "compRho", "comp2", "comp1"] : #  
+			for compTag in ["compStand"] : #  ["compStand","compAll", "compRho", "comp2", "comp1"]
 				mapColor = mapColorStandard
 				listTag = ["CSVIVFv2-StandardRho25"]
 				tagselection = "rho"+rhocut+"v"
@@ -100,14 +100,14 @@ for rhocut in rhoRange :
 				ratios = {}
 				#loop over eta an pt bins
 				for b in EtaPtBin :
-					count = -1
+					#count = -1
 					#loop over the histos
 					perfAll = {}
 					for h in listHistos :
 						h.doNormalization = True
 						#print h
 						#print h.name
-						count += 1
+						#count += 1
 						compAll = {}
 						compAll_keys = []
 						perfAll_keys = []
@@ -125,8 +125,8 @@ for rhocut in rhoRange :
 							passH = False
 							for f in listFlavors :
 								path = pathInFile+tag+"_"+b+"/"+h.name+"_"+tag+"_"+b+f
-								if count > 4 and "CSVIVFv2-StandardRho9999" in tag :
-									path = pathInFile+tag+"-Tag_"+b+"/"+h.name+"_"+tag+"-Tag_"+b+f
+								#if count > 4 and "CSVIVFv2-StandardRho9999" in tag :
+									#path = pathInFile+tag+"-Tag_"+b+"/"+h.name+"_"+tag+"-Tag_"+b+f
 								if "_B_" in path : 
 									path=path.replace("_B_","_"+f+"_")
 									path=path.replace(b+f,b)
@@ -143,7 +143,7 @@ for rhocut in rhoRange :
 									perfAll[f][tag]=histos[f]
 								perfAll_keys.append(tag)
 								continue
-							elif compTag=="comp2" or compTag =="compRho" or compTag == "comp1":
+							elif compTag=="comp2" or compTag =="compRho" or compTag == "comp1" or compTag == "compStand":
 								for f in listFlavors :
 									compAll[tag+f]=histos[f]
 									perfAll[f][tag]=histos[f]
@@ -188,7 +188,7 @@ for rhocut in rhoRange :
 								titleFlav = options.ValRel+"_"+options.ValSample+"_performance_Bvs"+f+"_"+tagselection
 								#save canvas
 								c[keyHisto] = savePlots(title=titleFlav,dirname=DirName+"/"+b,saveName=h.name+"_"+saveName,listFromats=listFromats,plot=h,Histos=Histos[keyHisto],keyHisto=keyHisto,listLegend=listTag,options=options,legendName=h.legend.replace("FLAV",f))
-						elif compTag == "comp2" or compTag == "compRho"  or compTag == "comp1":
+						elif compTag == "comp2" or compTag == "compRho"  or compTag == "comp1" or compTag == "compStand":
 							#print "comp Variables:", compAll_keys
 							keyHisto=h.name+"_"+b+"_"+compTag
 							#setup the histos
