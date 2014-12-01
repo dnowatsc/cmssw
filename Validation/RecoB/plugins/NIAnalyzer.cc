@@ -126,7 +126,7 @@ namespace ni_analyzer
 					   const TrackingGeometry * theG,
 					   const MagneticField * theMF);
 	
-	reco::VertexCompositePtrCandidate * refitVertex(reco::VertexCompositePtrCandidate const & vertex, edm::Handle<BeamSpot> beamSpot, std::vector<reco::Track const*> & tracks, edm::ESHandle<TransientTrackBuilder> trackBuilder);
+	reco::VertexCompositePtrCandidate refitVertex(reco::VertexCompositePtrCandidate const & vertex, edm::Handle<BeamSpot> beamSpot, std::vector<reco::Track const*> & tracks, edm::ESHandle<TransientTrackBuilder> trackBuilder);
 }
 
 
@@ -162,7 +162,7 @@ class NIAnalyzer : public edm::EDAnalyzer {
 	  edm::EDGetTokenT<reco::VertexCollection > token_primaryVertex_;
 	  edm::EDGetTokenT<reco::BeamSpot> bsSrc_;
 	  
-// 	  std::vector<TH1D*> SVHistosRho_; // *SVhistoParRho, *TVhistoRho
+	  std::vector<TH1D*> SVHistosRho_; // *SVhistoParRho, *TVhistoRho
 
 
       // ----------member data ---------------------------
@@ -381,8 +381,8 @@ NIAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 // 					PXBDetId refitPxbDetId((*refittedTrack->recHitsBegin())->geographicalId());
 // 					std::cout << "TEST0" << std::endl;
 					std::cout << "     Track Refit successful!" << std::endl
-						<< "       Original track chi2: " << recoTrack.chi2() 
-						<< " | refitted track chi2: " << " | " << refittedTrack->chi2() << std::endl
+						<< "       Original track chi2/normalizedChi2: " << recoTrack.chi2() << "/" << recoTrack.normalizedChi2()
+						<< " | refitted track chi2/normalizedChi2: " << " | " << refittedTrack->chi2()  << "/" << refittedTrack->normalizedChi2() << std::endl
 						<< "       Original track pt/ptError: " << recoTrack.pt() << "/" << recoTrack.ptError()
 						<< " | refitted track pt/pterror: " << " | " << refittedTrack->pt() << "/" << refittedTrack->ptError() << std::endl
 						<< "       Original track phi/phiError: " << recoTrack.phi() << "/" << recoTrack.phiError()
@@ -413,11 +413,35 @@ NIAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			std::cout << "   Refit Vertex!" << std::endl;
 			
 			VertexCompositePtrCandidate const * originalVertex = dynamic_cast<VertexCompositePtrCandidate const *>(&*iVertex);
-// 			
-			VertexCompositePtrCandidate const * newVertex = ni_analyzer::refitVertex(*originalVertex, recoBeamSpotHandle, newTracks, builder);
 			
-			if (!newVertex) std::cout << "     Vertex fitting NOT successful!" << std::endl;
-			else std::cout << "     Yep, successful." << std::endl;
+// 			std::cout << "   Vertex fitting successful!" << std::endl
+// 				<< "     Original vertex chi2/normalizedChi2: " << originalVertex->vertexChi2() << "/" << originalVertex->vertexNormalizedChi2()
+// // 				<< " | refitted vertex chi2/normalizedChi2: " << " | " << newVertex->vertexChi2() << newVertex->vertexNormalizedChi2() << std::endl
+// 				<< "     Original vertex x/xCovEl: " << originalVertex->vertex().x() << "/" << originalVertex->vertexCovariance(0,0)
+// // 				<< " | refitted vertex x/xCovEl: " << " | " << newVertex->vertex().x() << "/" << newVertex->vertexCovariance(0,0) << std::endl
+// 				<< "     Original vertex y/yCovEl: " << originalVertex->vertex().y() << "/" << originalVertex->vertexCovariance(1,1)
+// // 				<< " | refitted vertex y/yCovEl: " << " | " << newVertex->vertex().y() << "/" << newVertex->vertexCovariance(1,1) << std::endl
+// 				<< "     Original vertex z/zCovEl: " << originalVertex->vertex().z() << "/" << originalVertex->vertexCovariance(2,2);
+// // 				<< " | refitted vertex z/zCovEl: " << " | " << newVertex->vertex().z() << "/" << newVertex->vertexCovariance(2,2) << std::endl;
+// 			
+			VertexCompositePtrCandidate newVertex = ni_analyzer::refitVertex(*originalVertex, recoBeamSpotHandle, newTracks, builder);
+			
+			if (!newVertex.vertexChi2()) std::cout << "     Vertex fitting NOT successful!" << std::endl;
+			else std::cout << "   Vertex fitting successful!" << std::endl
+				<< "     Original vertex rho: " << originalVertex->vertex().rho()
+				<< " | refitted vertex rho: " << " | " << newVertex.vertex().rho() << std::endl
+				<< "     Original vertex chi2/normalizedChi2: " << originalVertex->vertexChi2() << "/" << originalVertex->vertexNormalizedChi2()
+				<< " | refitted vertex chi2/normalizedChi2: " << " | " << newVertex.vertexChi2()  << "/" << newVertex.vertexNormalizedChi2() << std::endl
+				<< "     Original vertex x/xCovEl: " << originalVertex->vertex().x() << "/" << originalVertex->vertexCovariance(0,0)
+				<< " | refitted vertex x/xCovEl: " << " | " << newVertex.vertex().x() << "/" << newVertex.vertexCovariance(0,0) << std::endl
+				<< "     Original vertex y/yCovEl: " << originalVertex->vertex().y() << "/" << originalVertex->vertexCovariance(1,1)
+				<< " | refitted vertex y/yCovEl: " << " | " << newVertex.vertex().y() << "/" << newVertex.vertexCovariance(1,1) << std::endl
+				<< "     Original vertex z/zCovEl: " << originalVertex->vertex().z() << "/" << originalVertex->vertexCovariance(2,2)
+				<< " | refitted vertex z/zCovEl: " << " | " << newVertex.vertex().z() << "/" << newVertex.vertexCovariance(2,2) << std::endl << std::endl;
+// 				<< "     Original vertex z/dxyError: " << originalVertex->dxy(*recoBeamSpotHandle) << "/" << originalVertex->dxyError()
+// 				<< " | refitted vertex dxy/dxyerror: " << " | " << newVertex.dxy(*recoBeamSpotHandle) << "/" << newVertex.dxyError() << std::endl
+// 				<< "     Original vertex dz/dzError: " << originalVertex->dz(recoBeamSpotHandle->position(originalVertex->vz())) << "/" << originalVertex->dzError()
+// 				<< " | refitted vertex dz/dzerror: " << " | " << newVertex.dz(recoBeamSpotHandle.position(newVertex.vz())) << "/" << newVertex.dzError() << std::endl;
 			
 		}
 		
@@ -647,7 +671,7 @@ TrajectoryStateOnSurface ni_analyzer::getInitialState(const reco::Track * theT,
   */
 }
 
-reco::VertexCompositePtrCandidate * ni_analyzer::refitVertex(reco::VertexCompositePtrCandidate const & vertex, edm::Handle<BeamSpot> beamSpot, std::vector<reco::Track const*> & tracks, edm::ESHandle<TransientTrackBuilder> trackBuilder)
+reco::VertexCompositePtrCandidate ni_analyzer::refitVertex(reco::VertexCompositePtrCandidate const & vertex, edm::Handle<BeamSpot> beamSpot, std::vector<reco::Track const*> & tracks, edm::ESHandle<TransientTrackBuilder> trackBuilder)
 {
 	GlobalPoint originalVertex(vertex.vx(), vertex.vy(), vertex.vz());
 	double sigmacut = 3.0;
@@ -682,17 +706,26 @@ reco::VertexCompositePtrCandidate * ni_analyzer::refitVertex(reco::VertexComposi
 		tts.push_back(tt);
 	}
 	
-	TransientVertex singleFitVertex;
-	singleFitVertex = theAdaptiveFitter.vertex(tts,originalVertex);
+	TransientVertex singleFitVertex = theAdaptiveFitter.vertex(tts,originalVertex);
 	
-	std::auto_ptr<reco::VertexCompositePtrCandidate> refittedVertex;
+	/// originally wanted to have 'std::auto_ptr<reco::VertexCompositePtrCandidate> refittedVertex', so one can easily check whether vertex was fitted by checking if this function returns a null pointer; however, this throws a runtime error (see log from 24/11/14) which is actually still present in the current setup
+    
+	reco::VertexCompositePtrCandidate refittedVertex;
 	
 	if(singleFitVertex.isValid()){
-		refittedVertex.reset(new reco::VertexCompositePtrCandidate(singleFitVertex));
-		std::cout << "     Vertex Fitting successful!" << std::endl;
+// 		std::cout << "TEST0" << std::endl;
+		VertexCompositePtrCandidate dummyVertex(singleFitVertex);
+// 		std::auto_ptr<reco::VertexCompositePtrCandidate> refittedVertex(new reco::VertexCompositePtrCandidate(singleFitVertex));
+		refittedVertex = dummyVertex;
+// 		std::cout << "TEST1" << std::endl;
+// 		std::cout << refittedVertex.vertexChi2() << std::endl;
+// 		*refittedVertex = dummyVertex;
+// 		std::cout << "TEST2" << std::endl;
+// 		return refittedVertex;
+// 		std::cout << "     Vertex Fitting successful!" << std::endl;
 	}
 	
-	return refittedVertex.get();
+	return refittedVertex;
         
 }
 

@@ -43,7 +43,8 @@ process.niAnalyzer = cms.EDAnalyzer("NIAnalyzer",
 )
 
 
-process.path = cms.Path(process.inclusiveCandidateVertexing
+process.path = cms.Path(
+    process.inclusiveCandidateVertexing
 	* process.niId
 	* process.niAnalyzer
 )
