@@ -63,7 +63,7 @@ else : title=options.ValRel+"vs"+options.RefRel+" "+options.ValSample+"_vs_"+opt
 for rhocut in rhoRange :
 	for version in range (0, maxRange) :
 		for version2 in range (version, maxRange) :
-			for compTag in ["compStand"] : #  ["compStand","compAll", "compRho", "comp2", "comp1"]
+			for compTag in tagCombos : #  ["compStand","compAll", "compRho", "comp2", "comp1"]
 				mapColor = mapColorStandard
 				listTag = ["CSVIVFv2-StandardRho25"]
 				tagselection = "rho"+rhocut+"v"

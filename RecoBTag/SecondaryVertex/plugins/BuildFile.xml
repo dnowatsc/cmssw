@@ -7,8 +7,10 @@
 <use name="DataFormats/VertexReco"/>
 <use name="DataFormats/BTauReco"/>
 <use name="RecoBTag/SecondaryVertex"/>
+<use name="TrackingTools/TrackFitters"/>
+<use name="RecoTracker/TransientTrackingRecHit"/>
 <use name="boost"/>
-<library file="TemplatedSecondaryVertexProducer.cc BVertexFilter.cc BtoCharmDecayVertexMerger.cc NuclearInteractionCandidateIdentifier.cc" name="RecoBTagSecondaryVertexProducer">
+<library file="TemplatedSecondaryVertexProducer.cc BVertexFilter.cc BtoCharmDecayVertexMerger.cc NuclearInteractionCandidateIdentifier.cc TrackReFitter.cc" name="RecoBTagSecondaryVertexProducer">
    <use name="DataFormats/BeamSpot"/>
    <use name="TrackingTools/Records"/>
    <use name="TrackingTools/TransientTrack"/>
