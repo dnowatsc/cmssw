@@ -24,6 +24,6 @@
 <use name="clhep"/>
 <use name="rootcore"/>
 <use name="root"/>
-<library file="*.cc" name="ValidationRecoBPlugins">
+<library file="BTagPerformanceAnalyzerMC.cc recoBSVTagInfoValidationAnalyzer.cc" name="ValidationRecoBPlugins">
   <flags EDM_PLUGIN="1"/>
 </library>

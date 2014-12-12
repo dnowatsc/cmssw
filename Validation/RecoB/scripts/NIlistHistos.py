@@ -51,9 +51,7 @@ discr = plotInfo(name="discr", title="Discriminant of all jets", legend="KEY-jet
                  logY=True, grid=False,
                  binning=None, Rebin=None, doNormalization=False
                  )
-effVsDiscrCut_discr = plotInfo(name="effVsDiscrCut_discr", title="Efficiency versus discriminant cut for all jets", legend="KEY-jets", Xlabel="Discriminant", Ylabel="efficiency",
-                               logY=True, grid=True
-                               )
+effVsDiscrCut_discr = plotInfo(name="effVsDiscrCut_discr", title="Efficiency versus discriminant cut for all jets", legend="KEY-jets", Xlabel="Discriminant", Ylabel="efficiency", logY=True, grid=False, legPos=[0.2,0.2,0.3,0.3] )
 #MC only
 FlavEffVsBEff_discr = plotInfo(name="FlavEffVsBEff_B_discr", title="b-tag efficiency versus non b-tag efficiency", 
                                legend="KEY FLAV-jets versus b-jets", Xlabel="b-tag efficiency", Ylabel="non b-tag efficiency",

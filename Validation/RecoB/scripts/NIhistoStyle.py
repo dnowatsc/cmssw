@@ -49,10 +49,11 @@ RefSample = ""
 
 maxRange = 6
 rhoRange = ["25", "9999"]
+tagCombos = ["compStand","compAll", "compRho", "comp2", "comp1"]
 
 tagselection = "testRho25v2withNew"
 #define output directory
-DirPath = "Output/RelValQCD_FlatPt_15_3000HS_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_02/"
+DirPath = "Output/RelValQCD_FlatPt_15_3000HS_13__CMSSW_7_2_0_pre5-POSTLS172_V3-v1__GEN-SIM-RECO/NIplotFactory_DQM_03/"
 filename = "NIrej"
 DirName = DirPath+tagselection
 
@@ -71,10 +72,15 @@ EtaPtBin =[
     "GLOBAL",
     #"ETA_0-1v4",
     #"ETA_1v4-2v4",
-    "PT_150-500",
-    "PT_500-1500",
-    "PT_1500-3000",
+    #"PT_150-500",
+    #"PT_500-1500",
+    #"PT_1500-3000",
     #"PT_80-120",
+    "PT_50-100",
+    "PT_100-200",
+    "PT_200-500",
+    "PT_500-1000",
+    "PT_1000-3000",
     ]
 #list of taggers to look at
 listTag = [
@@ -276,14 +282,14 @@ listHistos = [
     vertexCategory
     ]
 
-for i in vertexMass : listHistos.append(i)
-for i in vertexNTracks : listHistos.append(i)
+#for i in vertexMass : listHistos.append(i)
+#for i in vertexNTracks : listHistos.append(i)
 #for i in vertexJetDeltaR : listHistos.append(i)		# no significant changes for NI rejection; also not high discrimination power
 #for i in vertexEnergyRatio : listHistos.append(i)		# no significant changes for NI rejection
-for i in trackSip3dVal : listHistos.append(i)
-for i in trackSip3dSig : listHistos.append(i)
-for i in trackSip2dVal : listHistos.append(i)
-for i in trackSip2dSig : listHistos.append(i)
+#for i in trackSip3dVal : listHistos.append(i)
+#for i in trackSip3dSig : listHistos.append(i)
+#for i in trackSip2dVal : listHistos.append(i)
+#for i in trackSip2dSig : listHistos.append(i)
 #for i in trackSip3dSigAboveCharm : listHistos.append(i)
 #for i in trackDeltaR : listHistos.append(i)			# no significant changes for NI rejection; also not high discrimination power
 #for i in trackEtaRel : listHistos.append(i)

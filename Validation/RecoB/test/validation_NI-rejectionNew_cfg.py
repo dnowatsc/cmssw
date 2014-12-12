@@ -11,7 +11,7 @@ tag =  'POSTLS172_V3::All'
 #Flavour plots for MC: "all" = plots for all jets ; "dusg" = plots for d, u, s, dus, g independently ; not mandatory and any combinations are possible 
 #b, c, light (dusg), non-identified (NI), PU jets plots are always produced
 flavPlots = "allbcldusg"
-ptRanges = cms.vdouble(50.0, 150.0, 500., 1500., 3000.0)
+ptRanges = cms.vdouble(50.0, 100.0, 200., 500., 1000., 3000.0)
 #Check if jets originate from PU? option recommended (only for MC)
 PUid = True
 #List of taggers and taginfo to be considered (see example in: DQMOffline/RecoB/python/bTagCommon_cff.py)
@@ -118,7 +118,7 @@ process.flavourSeq = cms.Sequence(
 
 #Validation sequence
 process.load("Validation.RecoB.bTagAnalysis_cfi")
-process.bTagValidation.applyPtHatWeight = True
+process.bTagValidation.applyPtHatWeight = False
 process.bTagValidation.jetMCSrc = 'AK4byValAlgo'
 process.bTagValidation.tagConfig = tagConfig
 process.bTagHarvestMC.tagConfig = tagConfig
@@ -171,7 +171,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
 
-version = '02_50000ev_rho25_rho9999_QCD_flat_15-3000_v0-5'
+version = '03_50000ev_rho25_rho9999_QCD_flat_15-3000_v0-5'
     
 process.dqmEnv.subSystemFolder = 'BTAG'
 process.dqmSaver.producer = 'DQM'
