@@ -1,0 +1,10 @@
+<use   name="root"/>
+<use   name="TrackingTools/IPTools"/>
+<use   name="SimTracker/VertexCategorization"/>
+<use   name="DataFormats/BTauReco"/>
+<use   name="RecoVertex/PrimaryVertexProducer"/>
+<use   name="CommonTools/UtilAlgos"/>
+<use   name="CommonTools/Utils"/>
+<flags CXXFLAGS="-g" />
+<library   file="VertexCategorizerTest.cc" name="VertexCategorizationPlugins">
+</library>

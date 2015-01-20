@@ -3,12 +3,14 @@ import FWCore.ParameterSet.Config as cms
 from RecoBTag.SoftLepton.softLepton_cff import *
 from RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff import *
 from RecoBTag.SecondaryVertex.pfInclusiveSecondaryVertexFinderTagInfos_cfi import *
-from RecoBTag.ImpactParameter.pfImpactParameter_cfi import *
+from RecoBTag.ImpactParameter.pfImpactParameterTagInfos_cfi import *
 
-from RecoBTag.SecondaryVertex.candidateCombinedSecondaryVertexES_cfi import *
-from RecoBTag.SecondaryVertex.pfCombinedSecondaryVertexBJetTags_cfi import *
-from RecoBTag.SecondaryVertex.combinedInclusiveSecondaryVertexBJetTags_cfi import *
+from RecoBTag.SecondaryVertex.candidateCombinedSecondaryVertexV2Computer_cfi import *
+from RecoBTag.SecondaryVertex.pfCombinedInclusiveSecondaryVertexV2BJetTags_cfi import *
+#from RecoBTag.SecondaryVertex.combinedInclusiveSecondaryVertexBJetTags_cfi import *
 from RecoBTag.SecondaryVertex.nuclearInteractionIdentificationNew_cff import *
+from RecoBTag.SecondaryVertex.pfSimpleSecondaryVertexHighEffBJetTags_cfi import *
+from RecoBTag.ImpactParameter.pfTrackCountingHighEffBJetTags_cfi import *
 
 
 #======================================================================
@@ -20,11 +22,15 @@ from RecoBTag.SecondaryVertex.nuclearInteractionIdentificationNew_cff import *
 
 # standard CSVIVFv2 sequence
 
+pfSimpleSecondaryVertexHighEffBJetTags.tagInfos = cms.VInputTag(cms.InputTag('pfInclusiveSecondaryVertexFinderTagInfos'))
+
 MYbtagSequenceStandardRho25 = cms.Sequence(
 	inclusiveCandidateVertexing *
 	pfImpactParameterTagInfos *
 	pfInclusiveSecondaryVertexFinderTagInfos *
 	pfCombinedInclusiveSecondaryVertexV2BJetTags *
+	pfSimpleSecondaryVertexHighEffBJetTags *
+	pfTrackCountingHighEffBJetTags *
 	softPFElectronsTagInfos
 )
 
@@ -60,11 +66,16 @@ pfCombinedInclusiveSecondaryVertexV2BJetTagsRho9999 = pfCombinedInclusiveSeconda
 	)
 )
 
+pfSimpleSecondaryVertexHighEffBJetTagsRho9999 = pfSimpleSecondaryVertexHighEffBJetTags.clone(tagInfos = cms.VInputTag(cms.InputTag('pfInclusiveSecondaryVertexFinderTagInfosRho9999')))
+pfTrackCountingHighEffBJetTagsRho9999 = pfTrackCountingHighEffBJetTags.clone()
+
 MYbtagSequenceStandardRho9999 = cms.Sequence(
 	inclusiveCandidateVertexing *
 	pfImpactParameterTagInfos *
 	pfInclusiveSecondaryVertexFinderTagInfosRho9999 *
 	pfCombinedInclusiveSecondaryVertexV2BJetTagsRho9999 *
+	pfSimpleSecondaryVertexHighEffBJetTagsRho9999 *
+	pfTrackCountingHighEffBJetTagsRho9999 *
 	softPFElectronsTagInfos
 )
 
@@ -79,22 +90,26 @@ seq = (MYbtagSequenceStandardRho25 *
 # NI rejection version 0
 
 for rho in rhoCuts :
-	for i in range(0, Nversion2) :
-		globals()['pfImpactParameterTagInfosCleaned'+rho+'v%s'%i] = pfImpactParameterTagInfos.clone(candidates = "vertexAndTracksCleaned%s"%i)
-		if rho == 'Rho25' : rho2 = ''
-		else : rho2 = rho
-		globals()['pfInclusiveSecondaryVertexFinderTagInfosCleaned'+rho+'v%s'%i] = globals()['pfInclusiveSecondaryVertexFinderTagInfos'+rho2].clone(	
-			trackIPTagInfos = 'pfImpactParameterTagInfosCleaned'+rho+'v%s'%i, extSVCollection = "inclusiveSecondaryVerticesCleaned%s"%i)
-		globals()['pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned'+rho+'v%s'%i] = pfCombinedInclusiveSecondaryVertexV2BJetTags.clone(
-			tagInfos = cms.VInputTag(cms.InputTag('pfImpactParameterTagInfosCleaned'+rho+'v%s'%i), cms.InputTag('pfInclusiveSecondaryVertexFinderTagInfosCleaned'+rho+'v%s'%i)))
-		globals()['MYbtagSequenceNIremoved'+rho+'v%s'%i] = cms.Sequence(
-			globals()['nuclearInteractionsRemoved%s'%i] *
-			globals()['pfImpactParameterTagInfosCleaned'+rho+'v%s'%i] *
-			globals()['pfInclusiveSecondaryVertexFinderTagInfosCleaned'+rho+'v%s'%i] *
-			globals()['pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned'+rho+'v%s'%i] *
-			softPFElectronsTagInfos
-		)
-		seq = seq * globals()['MYbtagSequenceNIremoved'+rho+'v%s'%i]
+    for i in range(0, Nversion2) :
+        globals()['pfImpactParameterTagInfosCleaned'+rho+'v%s'%i] = pfImpactParameterTagInfos.clone(candidates = "vertexAndTracksCleaned%s"%i)
+        if rho == 'Rho25' : rho2 = ''
+        else : rho2 = rho
+        globals()['pfInclusiveSecondaryVertexFinderTagInfosCleaned'+rho+'v%s'%i] = globals()['pfInclusiveSecondaryVertexFinderTagInfos'+rho2].clone(	
+            trackIPTagInfos = 'pfImpactParameterTagInfosCleaned'+rho+'v%s'%i, extSVCollection = "inclusiveSecondaryVerticesCleaned%s"%i)
+        globals()['pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned'+rho+'v%s'%i] = pfCombinedInclusiveSecondaryVertexV2BJetTags.clone(
+            tagInfos = cms.VInputTag(cms.InputTag('pfImpactParameterTagInfosCleaned'+rho+'v%s'%i), cms.InputTag('pfInclusiveSecondaryVertexFinderTagInfosCleaned'+rho+'v%s'%i)))
+        globals()['pfSimpleSecondaryVertexHighEffBJetTagsCleaned'+rho+'v%s'%i] = pfSimpleSecondaryVertexHighEffBJetTags.clone(tagInfos = cms.VInputTag(cms.InputTag('pfInclusiveSecondaryVertexFinderTagInfosCleaned'+rho+'v%s'%i)))
+        globals()['pfTrackCountingHighEffBJetTagsCleaned'+rho+'v%s'%i] = pfTrackCountingHighEffBJetTags.clone(tagInfos = cms.VInputTag(cms.InputTag('pfImpactParameterTagInfosCleaned'+rho+'v%s'%i)))
+        globals()['MYbtagSequenceNIremoved'+rho+'v%s'%i] = cms.Sequence(
+            globals()['nuclearInteractionsRemoved%s'%i] *
+            globals()['pfImpactParameterTagInfosCleaned'+rho+'v%s'%i] *
+            globals()['pfInclusiveSecondaryVertexFinderTagInfosCleaned'+rho+'v%s'%i] *
+            globals()['pfCombinedInclusiveSecondaryVertexV2BJetTagsCleaned'+rho+'v%s'%i] *
+            globals()['pfSimpleSecondaryVertexHighEffBJetTagsCleaned'+rho+'v%s'%i] *
+            globals()['pfTrackCountingHighEffBJetTagsCleaned'+rho+'v%s'%i] *
+            softPFElectronsTagInfos
+        )
+        seq = seq * globals()['MYbtagSequenceNIremoved'+rho+'v%s'%i]
 	
 	
 # all b-tagging sequences

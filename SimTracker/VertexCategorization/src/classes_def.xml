@@ -1,0 +1,7 @@
+<lcgdict>
+
+    <!-- Dictionary for track categories-->
+	<!--<class name="edm::AssociationMap<edm::OneToManyWithQualityGeneric<TrackingParticleCollection, edm::View<reco::Track>, double> >"/>
+	<class name="edm::Wrapper<edm::AssociationMap<edm::OneToManyWithQualityGeneric<TrackingParticleCollection, edm::View<reco::Track>, double> > >"/>-->
+
+</lcgdict>
