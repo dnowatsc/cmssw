@@ -25,9 +25,15 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "SimGeneral/HepPDTRecord/interface/ParticleDataTable.h"
-#include "SimTracker/VertexCategorization/interface/VertexCategorizer2.h"
- #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+
+#include "SimTracker/VertexCategorization/interface/VertexCategorizer.h"
+#include "SimTracker/VertexCategorization/interface/TrackCategorizer.h"
+#include "SimTracker/VertexCategorization/interface/CategoryClasses.h"
+
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 //
 // class decleration
 //
@@ -40,30 +46,41 @@ public:
 
 private:
 
-  virtual void beginRun(const edm::Run&,const edm::EventSetup&);
+    virtual void beginRun(const edm::Run&,const edm::EventSetup&);
     virtual void beginJob() ;
     virtual void analyze(const edm::Event&, const edm::EventSetup&);
 
     // Member data
 
-    VertexCategorizer2 vertexClassifier_;
+    // VertexCategorizer vertexClassifier_;
 
     const edm::ParameterSet pSet;
+
+    TH1F *geantProcessTypes, *cmsProcessTypes;
 
     // edm::ESHandle<ParticleDataTable> pdt_;
 
 };
 
 
-VertexCategorizerTest::VertexCategorizerTest(const edm::ParameterSet& config) : vertexClassifier_(config), pSet(config)
+VertexCategorizerTest::VertexCategorizerTest(const edm::ParameterSet& config) :
+    // vertexClassifier_(config),
+    pSet(config)
 {
+    edm::Service<TFileService> fs;
+
+    geantProcessTypes = fs->make<TH1F>("GeantTypes", "Geant Process Types", 300, -0.5, 300 - 0.5);
+    cmsProcessTypes = fs->make<TH1F>("CMSTypes", "CMS Process Types", 300, -0.5, 300 - 0.5);
+
 }
 
 
 void VertexCategorizerTest::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
     // Set the classifier for a new event
-    vertexClassifier_.newEvent(event, setup);
+    VertexCategorizer vertexCategorizer(event, setup, pSet);
+
+    TrackCategorizer trackCategorizer(event, setup, pSet);
 	
 // 	std::cout << vertexCollection->size() << std::endl;
 	
@@ -73,7 +90,18 @@ void VertexCategorizerTest::analyze(const edm::Event& event, const edm::EventSet
 	
 	// std::cout << "VertexCollection size: " << vertRefVec.size() << std::endl;
 	
-    vertexClassifier_.evaluate(pSet);
+    vertexCategorizer.evaluate(pSet, trackCategorizer);
+
+    for (const VertexMCInformation & vertInfo : vertexCategorizer.returnAnalyzedVertices())
+    {
+        for (const TrackMCInformation & trackInfo : vertInfo.analyzedTracks)
+        {
+            geantProcessTypes->Fill(trackInfo.geantProcessType);
+            cmsProcessTypes->Fill(trackInfo.cmsProcessType);
+
+        }
+    }
+
 
 	// for (edm::RefToBaseVector<reco::Vertex>::const_iterator iVertex = vertRefVec.begin(); iVertex < vertRefVec.end(); ++iVertex)
 	// {

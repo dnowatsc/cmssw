@@ -19,7 +19,7 @@
 <use   name="TrackingTools/TransientTrack"/>
 <use   name="rootrflx"/>
 <Flags CXXFLAGS="-g"/>
-<Flags SKIP_FILES="VertexCategorizer.cc"/>
+<!-- <Flags SKIP_FILES="VertexCategorizer.cc"/> -->
 <export>
   <lib   name="1"/>
 </export>

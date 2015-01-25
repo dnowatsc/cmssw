@@ -10,6 +10,7 @@ vertexCategorizer = cms.PSet(
 	bestMatchByMaxValue = cms.untracked.bool(True),
     beamSpot = cms.untracked.InputTag("offlineBeamSpot"),
 	trackingTruth = cms.untracked.InputTag("mix","MergedTrackTruth"),
+	candidates = cms.untracked.InputTag("particleFlow"),
 	trackAssociator = cms.untracked.string('quickTrackAssociatorByHits'),
 	trackProducer = cms.untracked.InputTag("generalTracks"),
 	vertexProducer = cms.untracked.InputTag('offlinePrimaryVertices'),

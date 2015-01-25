@@ -43,11 +43,11 @@ process.vertexHistoryAnalyzer.vertexProducer = cms.untracked.InputTag('inclusive
 
 #process.vertexHistoryAnalyzer.vertexProducer = 'vertexSelector'
 
-process.GlobalTag.globaltag = 'START53_V27::All'
+process.GlobalTag.globaltag = 'MCRUN2_72_V3::All'
 
 process.p = cms.Path(process.inclusiveCandidateVertexing * process.vertexHistoryAnalyzer) #process.svTagInfoProxy * process.vertexSelector *
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring() 
 process.source = cms.Source ("PoolSource",fileNames = readFiles) 

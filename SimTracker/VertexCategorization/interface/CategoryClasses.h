@@ -2,6 +2,8 @@
 #ifndef CategoryClasses_h
 #define CategoryClasses_h
 
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -12,6 +14,10 @@
 
 struct TrackMCInformation
 {
+
+	// TrackMCInformation(edm::ParameterSet const & pSet) : quality(pSet) {}
+
+	// TrackMCInformation(TrackMCInformation & pSet) = default;
 
 	/*------QUALITY INFORMATION-----
 	 * What to include here?
@@ -32,26 +38,32 @@ struct TrackMCInformation
 	 */
 
 	 edm::RefToBase<reco::Track> recoTrackRef;
+	 edm::RefToBase<reco::Candidate> candRef;
 
 	// with reco::RecoToSimCollection::data_type := std::pair<edm::Ref<reco::TrackingParticleCollection>, double>
 	// std::vector<reco::RecoToSimCollection::data_type > tpRefWithQualityPairs;
 
-	 double trackWeight;
+	double trackWeight;
 
-	 int motherParticleID;
+	int numberMatches;
 
-	 int geantProcessType;
+	int motherParticleID;
 
-	 int vertexType;
+	int geantProcessType;
+	int cmsProcessType;
+
+	int vertexType;
+
+	bool bInHistory;
 
 	// TrackQuality is about about the hits, i.e. whether some hits were missed for the reco, whether some of these hits are bad in the first place etc.
 	// In a previous version, this was causing a segmentation violation (see VertexCategorizationDOC.txt) so don't use it for now; maybe this kind of information is to detailed anyway but could be useful
 	// TrackQuality quality;
 
 	// The associated double from the qTABH
-	 double matchingQuality;
+	double matchingQuality;
 	// The actual spatial difference between reco and gen track
-	 double dxyPull, dzPull;
+	double dxyPull, dzPull;
 
 };
 
@@ -61,9 +73,11 @@ struct VertexMCInformation
 {
 	edm::RefToBase<reco::VertexCompositePtrCandidate> vertexRef;
 
-	reco::RecoToSimCollection trackRecoToSim;
+	edm::RefToBaseVector<reco::Track> daughterTracks;
 
-	std::vector<TrackMCInformation> trackInfos;
+	// reco::RecoToSimCollection trackRecoToSim;
+
+	std::vector<TrackMCInformation> analyzedTracks;
 };
 
 #endif

@@ -13,330 +13,377 @@
 #include "SimTracker/Records/interface/TrackAssociatorRecord.h"
 
 
-#define update(a, b) do { (a) = (a) | (b); } while(0)
+#include "DataFormats/Common/interface/PtrVector.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
+#include "DataFormats/Candidate/interface/CandidateFwd.h"
 
-const char * VertexCategorizer::Names[] =
-{
-	"UnknownTrack",
-	"PrimaryVertex",
-	"UndefinedProcess",
-	"UnknownProcess",
-	"HadronicProcess",
-	"ComptonProcess",
-	"AnnihilationProcess",
-	"EIoniProcess",
-	"HIoniProcess",
-	"MuIoniProcess",
-	"PhotonProcess",
-	"MuPairProdProcess",
-	"ConversionsProcess",
-	"EBremProcess",
-	"SynchrotronRadiationProcess",
-	"MuBremProcess",
-	"MuNuclProcess",
-	"UnknownDecay",
-	"BWeakDecay",
-	"CFromBDecay",
-	"OtherFromBDecay",
-	"CWeakDecay",
-	"BtoDDecay",
-	"TauDecay",
-	"KsDecay",
-	"LambdaDecay",
-	"JpsiDecay",
-	"XiDecay",
-	"OmegaDecay",
-	"ChargePionDecay",
-	"ChargeKaonDecay",
-	"SigmaPlusDecay",
-	"SigmaMinusDecay"
-};
+#include "DataFormats/Common/interface/Ref.h"
+#include "DataFormats/Common/interface/RefToBaseVector.h"
 
-namespace{
-	void fillVec(std::vector<int> &, int);
+#include "SimTracker/VertexCategorization/interface/TrackCategorizer.h"
+
+int VertexCategorizer::vertexCount = 0;
+
+// namespace{
+// 	void fillVec(std::vector<int> &, int);
 	
-	void PUVerticesFinder(edm::Handle<TrackingVertexCollection> const & tvCollection){
-// 		std::cout << std::endl << "COORDINATES OF PVs:" << std::endl;
-		int counter1 = 0;
-		int counter2 = 0;
-		int counter3 = 0;
-		std::vector<int> eventNo;
-		std::vector<int> bunchCrossingNo;
-		int count = 0;
-		std::cout << "BunchCrossing / EventNo:" << std::endl;
-		for (TrackingVertexCollection::const_iterator iTV = tvCollection->begin(); iTV < tvCollection->end(); ++iTV, ++count){
-			bool closeBeam = (iTV->position().rho() < 1);
-			int bc = iTV->eventId().bunchCrossing();
-			int en = iTV->eventId().event();
-			fillVec(eventNo, en);
-			fillVec(bunchCrossingNo, bc);
-			if (!iTV->nSourceTracks() && !iTV->nGenVertices() && closeBeam){
-				counter1++;
-// 				std::cout << "  Vertex found at (x,y,z): " << iTV->position().x() << " " << iTV->position().y() << " " << iTV->position().z() << std::endl;
-			}
-			if (!iTV->nSourceTracks() && !iTV->nGenVertices()) counter2++;
-			if (closeBeam) counter3++;
-			if (count < 200000) std::cout << bc << " " << en << std::endl;
-		}
-		std::cout << std::endl << "Found PU vertices close to beam / Found PU vertices / Vertices close to beam / TVCollection size: " << counter1 << " " << counter2 << " " << counter3 << " " << tvCollection->size() << std::endl;
-		std::cout << "Event number countings of TVs: ";
-		for (unsigned int i = 0; i < eventNo.size(); ++i) std::cout << eventNo[i] << " ";
-		std::cout << std::endl << "BunchCrossing number countings of TVs: ";
-		for (unsigned int i = 0; i < bunchCrossingNo.size(); ++i) std::cout << bunchCrossingNo[i] << " ";
-		std::cout << std::endl << std::endl;
-	}
+// 	void PUVerticesFinder(edm::Handle<TrackingVertexCollection> const & tvCollection){
+// // 		std::cout << std::endl << "COORDINATES OF PVs:" << std::endl;
+// 		int counter1 = 0;
+// 		int counter2 = 0;
+// 		int counter3 = 0;
+// 		std::vector<int> eventNo;
+// 		std::vector<int> bunchCrossingNo;
+// 		int count = 0;
+// 		std::cout << "BunchCrossing / EventNo:" << std::endl;
+// 		for (TrackingVertexCollection::const_iterator iTV = tvCollection->begin(); iTV < tvCollection->end(); ++iTV, ++count){
+// 			bool closeBeam = (iTV->position().rho() < 1);
+// 			int bc = iTV->eventId().bunchCrossing();
+// 			int en = iTV->eventId().event();
+// 			fillVec(eventNo, en);
+// 			fillVec(bunchCrossingNo, bc);
+// 			if (!iTV->nSourceTracks() && !iTV->nGenVertices() && closeBeam){
+// 				counter1++;
+// // 				std::cout << "  Vertex found at (x,y,z): " << iTV->position().x() << " " << iTV->position().y() << " " << iTV->position().z() << std::endl;
+// 			}
+// 			if (!iTV->nSourceTracks() && !iTV->nGenVertices()) counter2++;
+// 			if (closeBeam) counter3++;
+// 			if (count < 200000) std::cout << bc << " " << en << std::endl;
+// 		}
+// 		std::cout << std::endl << "Found PU vertices close to beam / Found PU vertices / Vertices close to beam / TVCollection size: " << counter1 << " " << counter2 << " " << counter3 << " " << tvCollection->size() << std::endl;
+// 		std::cout << "Event number countings of TVs: ";
+// 		for (unsigned int i = 0; i < eventNo.size(); ++i) std::cout << eventNo[i] << " ";
+// 		std::cout << std::endl << "BunchCrossing number countings of TVs: ";
+// 		for (unsigned int i = 0; i < bunchCrossingNo.size(); ++i) std::cout << bunchCrossingNo[i] << " ";
+// 		std::cout << std::endl << std::endl;
+// 	}
 	
-	void fillVec(std::vector<int> & vec, int i){
-		if ((int)vec.size() < i+1){
-			vec.push_back(0);
-			fillVec(vec, i);
-		} else {
-			vec[i]++;
-		}
-	}
+// 	void fillVec(std::vector<int> & vec, int i){
+// 		if ((int)vec.size() < i+1){
+// 			vec.push_back(0);
+// 			fillVec(vec, i);
+// 		} else {
+// 			vec[i]++;
+// 		}
+// 	}
 	
-	double distanceToPrevGenVertex (HepMC::GenVertex const * thisVertex, HepMC::GenVertex const * motherVertex)
-	{
-		HepMC::ThreeVector thisVertPos = thisVertex->point3d();
-		HepMC::ThreeVector motherVertPos = motherVertex->point3d();
-		HepMC::ThreeVector flightVector;
-		flightVector.set(thisVertPos.x()-motherVertPos.x(), thisVertPos.y()-motherVertPos.y(), thisVertPos.z()-motherVertPos.z());
-		double travelDistance = flightVector.r(); //! in mm
+// 	double distanceToPrevGenVertex (HepMC::GenVertex const * thisVertex, HepMC::GenVertex const * motherVertex)
+// 	{
+// 		HepMC::ThreeVector thisVertPos = thisVertex->point3d();
+// 		HepMC::ThreeVector motherVertPos = motherVertex->point3d();
+// 		HepMC::ThreeVector flightVector;
+// 		flightVector.set(thisVertPos.x()-motherVertPos.x(), thisVertPos.y()-motherVertPos.y(), thisVertPos.z()-motherVertPos.z());
+// 		double travelDistance = flightVector.r(); //! in mm
 		
-		return travelDistance;
-	}
-}
+// 		return travelDistance;
+// 	}
+// }
 
 
-VertexCategorizer::VertexCategorizer(edm::ParameterSet const & config) :
-        quality_(config), hepMCLabel_( config.getUntrackedParameter<edm::InputTag>("hepMC") ),
-        beamSpotLabel_( config.getUntrackedParameter<edm::InputTag>("beamSpot") )
+VertexCategorizer::VertexCategorizer(edm::Event const & event, edm::EventSetup const & setup, edm::ParameterSet const & config) :
+        // quality_(config),
+		HistoryBase(),
+		trackProducer_( config.getUntrackedParameter<edm::InputTag>("trackProducer") ),
+		vertexProducer_( config.getUntrackedParameter<edm::InputTag>("vertexProducer") )
+        // beamSpotLabel_( config.getUntrackedParameter<edm::InputTag>("beamSpot") )
 {
-	bestMatchByMaxValue_ = config.getUntrackedParameter<bool>("bestMatchByMaxValue");
-	trackProducer_ = config.getUntrackedParameter<edm::InputTag>("trackProducer");
-	trackingTruth_ = config.getUntrackedParameter<edm::InputTag>("trackingTruth");
-	trackAssociator_ = config.getUntrackedParameter<std::string>("trackAssociator");
-	enableRecoToSim_ = config.getUntrackedParameter<bool>("enableRecoToSim");
-	badPull_ = config.getUntrackedParameter<double>("badPull");
+	// bestMatchByMaxValue_ = config.getUntrackedParameter<bool>("bestMatchByMaxValue");	// badPull_ = config.getUntrackedParameter<double>("badPull");	// --> store pull value directly and decide later on whether it is "bad"
     
 	// Set the history depth after hadronization
-//     tracer_.depth(-2);
+	// tracer_.depth(-2);
 
     // Set the minimum decay length for detecting long decays
-//     longLivedDecayLength_ = config.getUntrackedParameter<double>("longLivedDecayLength");
+	// longLivedDecayLength_ = config.getUntrackedParameter<double>("longLivedDecayLength");
 
     // Set the distance for clustering vertices
-	float vertexClusteringDistance = config.getUntrackedParameter<double>("vertexClusteringDistance");
-	vertexClusteringSqDistance_ = vertexClusteringDistance * vertexClusteringDistance;
+	// float vertexClusteringDistance = config.getUntrackedParameter<double>("vertexClusteringDistance");
+	// vertexClusteringSqDistance_ = vertexClusteringDistance * vertexClusteringDistance;
 	
 	// Set the number of innermost layers to check for bad hits
-	numberOfInnerLayers_ = config.getUntrackedParameter<unsigned int>("numberOfInnerLayers");
-}
+	// numberOfInnerLayers_ = config.getUntrackedParameter<unsigned int>("numberOfInnerLayers");
 
 
-void VertexCategorizer::newEvent(edm::Event const & event, edm::EventSetup const & setup)
-{
+	reset();
+
+	vertexCount = 0;
+
     // Get the new event information for the tracer
-//     tracer_.newEvent(event, setup);
-
-// 	std::cout << "====NEW EVENT====" << std::endl << std::endl;
+	// tracer_.newEvent(event, setup);
 	
 	// Track collection
-	edm::Handle<edm::View<reco::Track> > trackCollection;
-	event.getByLabel(trackProducer_, trackCollection);
+	// edm::Handle<edm::View<reco::Track> > trackCollection_;
+	event.getByLabel(trackProducer_, trackCollection_);
+
+	event.getByLabel(vertexProducer_, vertexCollection_);
 
 	// Tracking particle information
-	edm::Handle<TrackingParticleCollection>  TPCollection;
-	event.getByLabel(trackingTruth_, TPCollection);
+	// edm::Handle<TrackingParticleCollection>  TPCollection;
 
-	// Get the track associator
-	edm::ESHandle<TrackAssociatorBase> trackAssociator;
-	setup.get<TrackAssociatorRecord>().get(trackAssociator_, trackAssociator);
-
-	// Vertex collection
-// 	edm::Handle<edm::View<reco::Vertex> > vertexCollection;
-// 	event.getByLabel(vertexProducer_, vertexCollection);
-
-	// Tracking particle information
-	edm::Handle<TrackingVertexCollection>  TVCollection;
-	event.getByLabel(trackingTruth_, TVCollection);
-
-	// Get the track associator
-// 	edm::ESHandle<VertexAssociatorBase> vertexAssociator;
-// 	setup.get<VertexAssociatorRecord>().get(vertexAssociator_, vertexAssociator);
-
-	if ( enableRecoToSim_ )
+	for (size_t iVertex = 0; iVertex < vertexCollection_->size(); ++iVertex)
 	{
-		// Get the map between recovertex -> simvertex
-		trackRecoToSim_ = trackAssociator->associateRecoToSim(trackCollection, TPCollection, &event);
+		VertexMCInformation newVertex;
+		edm::RefToBase<reco::VertexCompositePtrCandidate> vertRef = vertexCollection_->refAt(iVertex);
+
+		newVertex.vertexRef = vertRef;
+
+		reco::VertexCompositePtrCandidate const & vCand = (*vertexCollection_)[iVertex];
+
+
+		std::cout << "Vertex " << iVertex << ":" << std::endl;
+		std::cout << "  Position 1: " << vertRef->vx() << "|" << vertRef->vy() << "|" << vertRef->vz() << std::endl << std::endl;
+		std::cout << "  Track Positions 1:" << std::endl;
+
+		for (size_t iDaughter = 0; iDaughter < vCand.numberOfSourceCandidatePtrs(); ++iDaughter)
+		{
+			const reco::Track * daughterTrack = vCand.sourceCandidatePtr(iDaughter)->bestTrack();
+			for (size_t iTrack = 0; iTrack < trackCollection_->size(); ++iTrack)
+			{
+				edm::RefToBase<reco::Track> trackPtr = trackCollection_->refAt(iTrack);
+				if (&(*trackPtr) == daughterTrack)
+				{
+					newVertex.daughterTracks.push_back(trackPtr);
+					std::cout << "    Track " << iDaughter << ":" << std::endl;
+					std::cout << "      Reco mother position 1: " << vCand.sourceCandidatePtr(iDaughter)->vx() << "|" << vCand.sourceCandidatePtr(iDaughter)->vy() << "|" << vCand.sourceCandidatePtr(iDaughter)->vz() << std::endl;
+					std::cout << "      Reco mother position 2: " << vCand.daughterPtr(iDaughter)->vx() << "|" << vCand.daughterPtr(iDaughter)->vy() << "|" << vCand.daughterPtr(iDaughter)->vz() << std::endl;
+					std::cout << "      Reco mother position 3: " << trackPtr->vertex().x() << "|" << trackPtr->vertex().y() << "|" << trackPtr->vertex().z() << std::endl;
+					std::cout << "      Reco mother position 4: " << trackPtr->referencePoint().x() << "|" << trackPtr->referencePoint().y() << "|" << trackPtr->referencePoint().z() << std::endl;
+
+				}
+			}
+			if ( !daughterTrack)
+				std::cout << "Track " << iDaughter << ": " << daughterTrack->pt() << " | " << newVertex.daughterTracks[newVertex.daughterTracks.size()-1]->pt() << std::endl;
+		}
+
+		std::cout << std::endl;
+
+		analyzedVertices_.push_back(newVertex);
 	}
+
+	// Tracking particle information
+	// edm::Handle<TrackingVertexCollection>  TVCollection;
+	// event.getByLabel(trackingTruth_, TVCollection);
+
+	// Get the track associator
+	// edm::ESHandle<VertexAssociatorBase> vertexAssociator;
+	// setup.get<VertexAssociatorRecord>().get(vertexAssociator_, vertexAssociator);
+
+	// if ( enableRecoToSim_ )
+	// {
+	// 	// Get the map between recovertex -> simvertex
+	// 	trackRecoToSim_ = trackAssociator->associateRecoToSim(trackCollection_, TPCollection, &event);
+	// }
 
     // Get hepmc of the event
-    event.getByLabel(hepMCLabel_, mcInformation_);
+ 	// event.getByLabel(hepMCLabel_, mcInformation_);
 	
-	setup.get<IdealMagneticFieldRecord>().get(magneticField_);
+	// setup.get<IdealMagneticFieldRecord>().get(magneticField_);
 
     // Get the partivle data table
-    setup.getData(particleDataTable_);
+	// setup.getData(particleDataTable_);
 	
-	// get the beam spot
-	event.getByLabel(beamSpotLabel_, beamSpot_);
+	// // get the beam spot
+	// event.getByLabel(beamSpotLabel_, beamSpot_);
 
     // Create the list of primary vertices associated to the event
-	genPrimaryVertices(TVCollection);
+	// genPrimaryVertices(TVCollection);
 	
-// 	std::cout << "GenPrimVert size: " << genpvs_.size() << std::endl << std::endl;
+	// std::cout << "GenPrimVert size: " << genpvs_.size() << std::endl << std::endl;
 	
-// 	PUVerticesFinder(TVCollection);
+	// PUVerticesFinder(TVCollection);
 }
 
 
-VertexCategorizer const & VertexCategorizer::evaluate (reco::VertexBaseRef const & vertex)
+void VertexCategorizer::newEvent()
 {
-    // Initializing the category vector
-    reset();
-	
-	double recoDaughterTotalWeight = 0.;
-	
-	std::cout << "NEW VERTEX -> Parent position(x/y/z) | type | geant type | decaying particle:";
-	int iTrack = 0;
-    
-    for (reco::Vertex::trackRef_iterator iVertDaughter = vertex->tracks_begin(); iVertDaughter != vertex->tracks_end(); ++iVertDaughter, ++iTrack)
+}
+
+void VertexCategorizer::evaluate(edm::ParameterSet const & config, VertexMCInformation & vertInfo, TrackCategorizer & trackCategorizer)
+{
+
+	// std::cout << "Vertex " << vertexCount++ << ":" << std::endl;
+	// std::cout << "Position: " << vertInfo.vertexRef->vx() << "|" << vertInfo.vertexRef->vy() << "|" << vertInfo.vertexRef->vz() << std::endl << std::endl;
+
+	trackCategorizer.newTrackCollection(vertInfo.daughterTracks);
+
+	std::cout << "  Vertex " << vertexCount++ << ", Track Positions 2:" << std::endl;
+	trackCategorizer.evaluate();
+	std::cout << std::endl;
+
+	vertInfo.analyzedTracks = trackCategorizer.returnAnalyzedTracks();
+
+	for (TrackMCInformation & trackInfo : vertInfo.analyzedTracks)
 	{
-		std::cout << std::endl << " Track " << iTrack << ": ";
-		double recoDaughterWeight = vertex->trackWeight(*iVertDaughter);
-		recoDaughterTotalWeight += recoDaughterWeight;
+		// calculate trackWeigth here if it is possible
+		trackInfo.trackWeight = 1.;
+	}
+
+	/* RecoToSimCollection is typedef from edm::AssociationMap<edm::OneToManyWithQualityGeneric <edm::View<reco::Track>, TrackingParticleCollection, double> >
+	 * edm::View<reco::Track> is the key, TrackingParticleCollection the val(ue)
+	 * RecoToSimCollection::const_iterator returns a const_iterator on a (i.e. dereferencing it with operator*() returns) helpers::KeyVal object (see DataFormats/Common/interface/AssociationMapHelpers.h); keyVal->key returns the key (in this case, the edm::RefToBase<edm::View<reco::Track> >), keyVal->val returns a RecoToSimCollection::data_type, which is again a typedef on std::vector<std::pair<edm::Ref<TrackingParticleCollection>, double > > (or ...<edm::RefToBase<TrackingParticleCollection>, ... >? but should not be the case since TrackingParticleCollection is a typedef on std::vector<TrackingParticle>)
+	 */
+
+	// TrackCategorizer trackCategorizer(config, vertInfo.trackRecoToSim, genpvs_);
+
+	// trackCategorizer.evaluate();
+
+	// vertInfo.trackInfos = trackCategorizer.returnAnalyzedTracks();
+
+	// for (edm::RefToBaseVector<reco::Track>::const_iterator iTrackRef = daughterTracks_.begin(); iTrackRef != daughterTracks_.end(); ++iTrackRef)
+	// {
+	// 	const std::vector<reco::RecoToSimCollection::data_type> & matches = trackRecoToSim[*iTrackRef];
+	// 	std::cout << "reco::Track | matched TPs pt: " << (*iTrackRef)->pt() << " | ";
+	// 	for (reco::RecoToSimCollection::data_type const & match : matches)
+	// 		std::cout << match.first->pt() << " ";
+	// 	std::cout << std::endl;
+	// }
+}
+
+// VertexCategorizer const & VertexCategorizer::evaluate (reco::VertexBaseRef const & vertex)
+// {
+//     // Initializing the category vector
+//     reset();
+	
+// 	double recoDaughterTotalWeight = 0.;
+	
+// 	std::cout << "NEW VERTEX -> Parent position(x/y/z) | type | geant type | decaying particle:";
+// 	int iTrack = 0;
+    
+//     for (reco::Vertex::trackRef_iterator iVertDaughter = vertex->tracks_begin(); iVertDaughter != vertex->tracks_end(); ++iVertDaughter, ++iTrack)
+// 	{
+// 		std::cout << std::endl << " Track " << iTrack << ": ";
+// 		double recoDaughterWeight = vertex->trackWeight(*iVertDaughter);
+// 		recoDaughterTotalWeight += recoDaughterWeight;
 		
-		std::pair<TrackingParticleRef, double> result =  match(*iVertDaughter, trackRecoToSim_, bestMatchByMaxValue_); /// should work since iVertdDaughter is a const_iterator of type TrackBaseRef
+// 		std::pair<TrackingParticleRef, double> result =  match(*iVertDaughter, trackRecoToSim_, bestMatchByMaxValue_); /// should work since iVertdDaughter is a const_iterator of type TrackBaseRef
 			
-		TrackingParticleRef tpr( result.first );
-		double quality_ = result.second;
+// 		TrackingParticleRef tpr( result.first );
+// 		double quality_ = result.second;
 		
-		if (quality_ < .9) BadMatchingWeight_ += recoDaughterWeight;
+// 		if (quality_ < .9) BadMatchingWeight_ += recoDaughterWeight;
 		
-		if (!tpr.isNull()){
-			std::cout << tpr->parentVertex()->position().x() << "/" << tpr->parentVertex()->position().y() << "/" << tpr->parentVertex()->position().z();
+// 		if (!tpr.isNull()){
+// 			std::cout << tpr->parentVertex()->position().x() << "/" << tpr->parentVertex()->position().y() << "/" << tpr->parentVertex()->position().z();
 			
-			HistoryBase tracer_;
-			tracer_.depth(-2);
+// 			HistoryBase tracer_;
+// 			tracer_.depth(-2);
 			
-			tracer_.evaluate(tpr);
-			int vertexKindDist = vertexInformationDist(tracer_);
+// 			tracer_.evaluate(tpr);
+// 			int vertexKindDist = vertexInformationDist(tracer_);
 			
-			std::cout << " | " << vertexKindDist;
+// 			std::cout << " | " << vertexKindDist;
 			
-			if (checkIsBad(*iVertDaughter, tpr)) BadTrackWeight_ += recoDaughterWeight;
+// 			if (checkIsBad(*iVertDaughter, tpr)) BadTrackWeight_ += recoDaughterWeight;
 		
-			if (vertexKindDist == 1){
-				flags_[PrimaryVertex] += recoDaughterWeight;
-			}
-			else {
-				if (tpr->trackPSimHit().empty()){
-					flags_[UnknownProcess] += recoDaughterWeight;
-					continue;
-				}
+// 			if (vertexKindDist == 1){
+// 				flags_[PrimaryVertex] += recoDaughterWeight;
+// 			}
+// 			else {
+// 				if (tpr->trackPSimHit().empty()){
+// 					flags_[UnknownProcess] += recoDaughterWeight;
+// 					continue;
+// 				}
 				
-				unsigned short process = tpr->pSimHit_begin()->processType();
+// 				unsigned short process = tpr->pSimHit_begin()->processType();
 				
-				std::cout << " | " << process;
+// 				std::cout << " | " << process;
 				
-				if (process == G4::Hadronic) flags_[HadronicProcess] += recoDaughterWeight;
-				if (process == G4::Unknown) flags_[UnknownProcess] += recoDaughterWeight;
-				if (process == G4::Undefined) flags_[UndefinedProcess] += recoDaughterWeight;
-				if (process == G4::Compton) flags_[ComptonProcess] += recoDaughterWeight;
-				if (process == G4::Annihilation) flags_[AnnihilationProcess] += recoDaughterWeight;
-				if (process == G4::EIoni) flags_[EIoniProcess] += recoDaughterWeight;
-				if (process == G4::HIoni) flags_[HIoniProcess] += recoDaughterWeight;
-				if (process == G4::MuIoni) flags_[MuIoniProcess] += recoDaughterWeight;
-				if (process == G4::Photon) flags_[PhotonProcess] += recoDaughterWeight;
-				if (process == G4::MuPairProd) flags_[MuPairProdProcess] += recoDaughterWeight;
-				if (process == G4::EBrem) flags_[EBremProcess] += recoDaughterWeight;
-				if (process == G4::SynchrotronRadiation) flags_[SynchrotronRadiationProcess] += recoDaughterWeight;
-				if (process == G4::MuBrem) flags_[MuBremProcess] += recoDaughterWeight;
-				if (process == G4::Conversions) flags_[ConversionsProcess] += recoDaughterWeight;
-				if (process == G4::MuNucl) flags_[MuNuclProcess] += recoDaughterWeight;
+// 				if (process == G4::Hadronic) flags_[HadronicProcess] += recoDaughterWeight;
+// 				if (process == G4::Unknown) flags_[UnknownProcess] += recoDaughterWeight;
+// 				if (process == G4::Undefined) flags_[UndefinedProcess] += recoDaughterWeight;
+// 				if (process == G4::Compton) flags_[ComptonProcess] += recoDaughterWeight;
+// 				if (process == G4::Annihilation) flags_[AnnihilationProcess] += recoDaughterWeight;
+// 				if (process == G4::EIoni) flags_[EIoniProcess] += recoDaughterWeight;
+// 				if (process == G4::HIoni) flags_[HIoniProcess] += recoDaughterWeight;
+// 				if (process == G4::MuIoni) flags_[MuIoniProcess] += recoDaughterWeight;
+// 				if (process == G4::Photon) flags_[PhotonProcess] += recoDaughterWeight;
+// 				if (process == G4::MuPairProd) flags_[MuPairProdProcess] += recoDaughterWeight;
+// 				if (process == G4::EBrem) flags_[EBremProcess] += recoDaughterWeight;
+// 				if (process == G4::SynchrotronRadiation) flags_[SynchrotronRadiationProcess] += recoDaughterWeight;
+// 				if (process == G4::MuBrem) flags_[MuBremProcess] += recoDaughterWeight;
+// 				if (process == G4::Conversions) flags_[ConversionsProcess] += recoDaughterWeight;
+// 				if (process == G4::MuNucl) flags_[MuNuclProcess] += recoDaughterWeight;
 				
-				if (process == G4::Primary || process == G4::Decay){
-					int pdgid = 0;
+// 				if (process == G4::Primary || process == G4::Decay){
+// 					int pdgid = 0;
 					
-					if (tpr->parentVertex()->nSourceTracks()){
+// 					if (tpr->parentVertex()->nSourceTracks()){
 						
-						TrackingParticleRef const & selectedTrack = getSourceTrack(tpr->parentVertex());
+// 						TrackingParticleRef const & selectedTrack = getSourceTrack(tpr->parentVertex());
 						
-						if (!selectedTrack.isNull())
-							pdgid = selectedTrack->pdgId();
+// 						if (!selectedTrack.isNull())
+// 							pdgid = selectedTrack->pdgId();
 						
-					} else if (tpr->parentVertex()->nGenVertices()){
-						pdgid = getLongLivedGenParticle(tpr->parentVertex());
-					}
+// 					} else if (tpr->parentVertex()->nGenVertices()){
+// 						pdgid = getLongLivedGenParticle(tpr->parentVertex());
+// 					}
 					
-					std::cout << " | " << pdgid;
+// 					std::cout << " | " << pdgid;
 					
-					if (!pdgid){
-						flags_[UnknownDecay] += recoDaughterWeight;
-						continue;
-					}
+// 					if (!pdgid){
+// 						flags_[UnknownDecay] += recoDaughterWeight;
+// 						continue;
+// 					}
 					
-					HepPDT::ParticleID particleID(std::abs(pdgid));
+// 					HepPDT::ParticleID particleID(std::abs(pdgid));
 					
-					// Check if the particle type is valid one
-					if (particleID.isValid())
-					{
-						// Check for B and C weak decays
-						if (particleID.hasBottom()) flags_[BWeakDecay] += recoDaughterWeight;
-						else if (checkBInHistory(tracer_.genParticleTrail()) || checkBInHistory(tracer_.simParticleTrail())){
-							if (particleID.hasCharm()) flags_[CFromBDecay] += recoDaughterWeight;
-							else flags_[OtherFromBDecay] += recoDaughterWeight;
-						}
-						else {
-							if (particleID.hasCharm()) flags_[CWeakDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 211) flags_[ChargePionDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 321) flags_[ChargeKaonDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 15) flags_[TauDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 310) flags_[KsDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 3122) flags_[LambdaDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 443) flags_[JpsiDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 3312) flags_[XiDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 3334) flags_[OmegaDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 3222) flags_[SigmaPlusDecay] += recoDaughterWeight;
-							if (std::abs(pdgid) == 3112) flags_[SigmaMinusDecay] += recoDaughterWeight;
-						}
+// 					// Check if the particle type is valid one
+// 					if (particleID.isValid())
+// 					{
+// 						// Check for B and C weak decays
+// 						if (particleID.hasBottom()) flags_[BWeakDecay] += recoDaughterWeight;
+// 						else if (checkBInHistory(tracer_.genParticleTrail()) || checkBInHistory(tracer_.simParticleTrail())){
+// 							if (particleID.hasCharm()) flags_[CFromBDecay] += recoDaughterWeight;
+// 							else flags_[OtherFromBDecay] += recoDaughterWeight;
+// 						}
+// 						else {
+// 							if (particleID.hasCharm()) flags_[CWeakDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 211) flags_[ChargePionDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 321) flags_[ChargeKaonDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 15) flags_[TauDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 310) flags_[KsDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 3122) flags_[LambdaDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 443) flags_[JpsiDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 3312) flags_[XiDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 3334) flags_[OmegaDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 3222) flags_[SigmaPlusDecay] += recoDaughterWeight;
+// 							if (std::abs(pdgid) == 3112) flags_[SigmaMinusDecay] += recoDaughterWeight;
+// 						}
 						
 							
-							// Check for B or C pure leptonic decays
-// 							int daughtId = abs((*iparticle)->pdgId());
-// 							update(flags_[FromBWeakDecayMuon], particleID.hasBottom() && daughtId == 13);
-// 							update(flags_[FromCWeakDecayMuon], particleID.hasCharm() && daughtId == 13);
+// 							// Check for B or C pure leptonic decays
+// // 							int daughtId = abs((*iparticle)->pdgId());
+// // 							update(flags_[FromBWeakDecayMuon], particleID.hasBottom() && daughtId == 13);
+// // 							update(flags_[FromCWeakDecayMuon], particleID.hasCharm() && daughtId == 13);
 						
-					}
-				}
-			}
+// 					}
+// 				}
+// 			}
 			
-			/// DON'T CHECK QUALITY FOR NOW, PRODUCES SEGMENTATION VIOLATION PROBABLY IN TrackerHitAssociator::associateHitId() IN quality_.evaluate()
-// 			qualityInformation(tracer_.simParticleTrail(), *iVertDaughter);
+// 			/// DON'T CHECK QUALITY FOR NOW, PRODUCES SEGMENTATION VIOLATION PROBABLY IN TrackerHitAssociator::associateHitId() IN quality_.evaluate()
+// // 			qualityInformation(tracer_.simParticleTrail(), *iVertDaughter);
 			
-		} else {
-// 			std::cout << std::endl << "!!--NO MATCHING TP FOUND!--!!" << std::endl <<std::endl;
-			flags_[UnknownTrack] += recoDaughterWeight;
-		}
-	}
+// 		} else {
+// // 			std::cout << std::endl << "!!--NO MATCHING TP FOUND!--!!" << std::endl <<std::endl;
+// 			flags_[UnknownTrack] += recoDaughterWeight;
+// 		}
+// 	}
 	
-	if (recoDaughterTotalWeight){
-		for (unsigned int i = 0; i < flags_.size(); ++i)
-			flags_[i] = flags_[i]/recoDaughterTotalWeight;
-		BadMatchingWeight_ = BadMatchingWeight_/recoDaughterTotalWeight;
-		BadTrackWeight_ = BadTrackWeight_/recoDaughterTotalWeight;
-	}
+// 	if (recoDaughterTotalWeight){
+// 		for (unsigned int i = 0; i < flags_.size(); ++i)
+// 			flags_[i] = flags_[i]/recoDaughterTotalWeight;
+// 		BadMatchingWeight_ = BadMatchingWeight_/recoDaughterTotalWeight;
+// 		BadTrackWeight_ = BadTrackWeight_/recoDaughterTotalWeight;
+// 	}
 	
-	std::cout << std::endl << std::endl << " ";
-	for (unsigned int i = 0; i < flags_.size(); ++i)
-		std::cout << Names[i] << ":\t" << flags_[i] << std::endl;
-	std::cout << std::endl << " BadMatchingWeight: " << BadMatchingWeight_ << std::endl;
-	std::cout << " BadTrackWeight: " << BadTrackWeight_ << std::endl;
-	std::cout << std::endl;
+// 	std::cout << std::endl << std::endl << " ";
+// 	for (unsigned int i = 0; i < flags_.size(); ++i)
+// 		std::cout << Names[i] << ":\t" << flags_[i] << std::endl;
+// 	std::cout << std::endl << " BadMatchingWeight: " << BadMatchingWeight_ << std::endl;
+// 	std::cout << " BadTrackWeight: " << BadTrackWeight_ << std::endl;
+// 	std::cout << std::endl;
 			
-    return *this;
-}
+//     return *this;
+// }
 
 
 /// MOD: ignore simToReco for now
@@ -383,51 +430,51 @@ VertexCategorizer const & VertexCategorizer::evaluate (reco::VertexBaseRef const
 // }
 
 
-bool VertexCategorizer::checkBInHistory(HistoryBase::GenParticleTrail const & genParticleTrail)
-{
-    // Loop over the generated vertices
-    for (HistoryBase::GenParticleTrail::const_iterator iTrack = genParticleTrail.begin(); iTrack != genParticleTrail.end(); ++iTrack)
-    {
-        // Get the pointer to the vertex by removing the const-ness (no const methos in HepMC::GenVertex)
-        HepMC::GenParticle const * particle = *iTrack;
+// bool VertexCategorizer::checkBInHistory(HistoryBase::GenParticleTrail const & genParticleTrail)
+// {
+//     // Loop over the generated vertices
+//     for (HistoryBase::GenParticleTrail::const_iterator iTrack = genParticleTrail.begin(); iTrack != genParticleTrail.end(); ++iTrack)
+//     {
+//         // Get the pointer to the vertex by removing the const-ness (no const methos in HepMC::GenVertex)
+//         HepMC::GenParticle const * particle = *iTrack;
 		
-		// Collect the pdgid of the parent
-		int pdgid = std::abs(particle->pdg_id());
-		// Get particle type
-		HepPDT::ParticleID particleID(pdgid);
+// 		// Collect the pdgid of the parent
+// 		int pdgid = std::abs(particle->pdg_id());
+// 		// Get particle type
+// 		HepPDT::ParticleID particleID(pdgid);
 		
-		// Check if the particle type is valid one
-		if (particleID.isValid())
-		{
-			if (particleID.hasBottom()) return true;
-		}
-    }
+// 		// Check if the particle type is valid one
+// 		if (particleID.isValid())
+// 		{
+// 			if (particleID.hasBottom()) return true;
+// 		}
+//     }
     
-    return false;
-}
+//     return false;
+// }
 
 
-bool VertexCategorizer::checkBInHistory(HistoryBase::SimParticleTrail const & simParticleTrail)
-{
+// bool VertexCategorizer::checkBInHistory(HistoryBase::SimParticleTrail const & simParticleTrail)
+// {
 
-	for (HistoryBase::SimParticleTrail::const_iterator iTrack = simParticleTrail.begin(); iTrack != simParticleTrail.end(); ++iTrack)
-    {
-        // pdgid of the real source parent vertex
+// 	for (HistoryBase::SimParticleTrail::const_iterator iTrack = simParticleTrail.begin(); iTrack != simParticleTrail.end(); ++iTrack)
+//     {
+//         // pdgid of the real source parent vertex
 		
-		int pdgid = std::abs((*iTrack)->pdgId());
+// 		int pdgid = std::abs((*iTrack)->pdgId());
 		
-		// Get particle type
-		HepPDT::ParticleID particleID(pdgid);
-		// Check if the particle type is valid one
-		if (particleID.isValid())
-		{
-			if (particleID.hasBottom()) return true;
-		}
+// 		// Get particle type
+// 		HepPDT::ParticleID particleID(pdgid);
+// 		// Check if the particle type is valid one
+// 		if (particleID.isValid())
+// 		{
+// 			if (particleID.hasBottom()) return true;
+// 		}
 		
-	}
+// 	}
 	
-	return false;
-}
+// 	return false;
+// }
 
 // const double VertexCategorizer::weight(G4::Process processQuery) const
 // {
@@ -517,175 +564,175 @@ bool VertexCategorizer::checkBInHistory(HistoryBase::SimParticleTrail const & si
 // }
 
 
-int VertexCategorizer::vertexInformationDist(HistoryBase const & tracer_)
-{
-	if (genpvs_.size() == 0){
-		std::cout << "NO PV FOUND!" << std::endl;
-		return -1;
-	}
-	// Get the main primary vertex from the list
-	GeneratedPrimaryVertex const & genpv = genpvs_.back();
+// int VertexCategorizer::vertexInformationDist(HistoryBase const & tracer_)
+// {
+// 	if (genpvs_.size() == 0){
+// 		std::cout << "NO PV FOUND!" << std::endl;
+// 		return -1;
+// 	}
+// 	// Get the main primary vertex from the list
+// 	GeneratedPrimaryVertex const & genpv = genpvs_.back();
 	
-	// Get the generated history of the tracks
-	HistoryBase::GenParticleTrail & genParticleTrail = const_cast<HistoryBase::GenParticleTrail &> (tracer_.genParticleTrail());
+// 	// Get the generated history of the tracks
+// 	HistoryBase::GenParticleTrail & genParticleTrail = const_cast<HistoryBase::GenParticleTrail &> (tracer_.genParticleTrail());
 	
-	// Vertex counter
-	int counter = 0;
+// 	// Vertex counter
+// 	int counter = 0;
 	
-	// Unit transformation from mm to cm
-	double const mm = 0.1;
+// 	// Unit transformation from mm to cm
+// 	double const mm = 0.1;
 	
-	double oldX = genpv.x;
-	double oldY = genpv.y;
-	double oldZ = genpv.z;
+// 	double oldX = genpv.x;
+// 	double oldY = genpv.y;
+// 	double oldZ = genpv.z;
 	
-	// Loop over the generated particles
-	for (
-		HistoryBase::GenParticleTrail::reverse_iterator iparticle = genParticleTrail.rbegin();
-	iparticle != genParticleTrail.rend();
-	++iparticle
-	)
-	{
-		// Look for those with production vertex
-		HepMC::GenVertex * parent = (*iparticle)->production_vertex();
-		if (parent)
-		{
-			HepMC::ThreeVector p = parent->point3d();
+// 	// Loop over the generated particles
+// 	for (
+// 		HistoryBase::GenParticleTrail::reverse_iterator iparticle = genParticleTrail.rbegin();
+// 	iparticle != genParticleTrail.rend();
+// 	++iparticle
+// 	)
+// 	{
+// 		// Look for those with production vertex
+// 		HepMC::GenVertex * parent = (*iparticle)->production_vertex();
+// 		if (parent)
+// 		{
+// 			HepMC::ThreeVector p = parent->point3d();
 			
-			double distance2   = pow(p.x() * mm - genpv.x, 2) + pow(p.y() * mm - genpv.y, 2) + pow(p.z() * mm - genpv.z, 2);
-			double difference2 = pow(p.x() * mm - oldX, 2)    + pow(p.y() * mm - oldY, 2)    + pow(p.z() * mm - oldZ, 2);
+// 			double distance2   = pow(p.x() * mm - genpv.x, 2) + pow(p.y() * mm - genpv.y, 2) + pow(p.z() * mm - genpv.z, 2);
+// 			double difference2 = pow(p.x() * mm - oldX, 2)    + pow(p.y() * mm - oldY, 2)    + pow(p.z() * mm - oldZ, 2);
 			
-			// std::cout << "Distance2 : " << distance2 << " (" << p.x() * mm << "," << p.y() * mm << "," << p.z() * mm << ")" << std::endl;
-			// std::cout << "Difference2 : " << difference2 << std::endl;
+// 			// std::cout << "Distance2 : " << distance2 << " (" << p.x() * mm << "," << p.y() * mm << "," << p.z() * mm << ")" << std::endl;
+// 			// std::cout << "Difference2 : " << difference2 << std::endl;
 			
-			if ( difference2 > vertexClusteringSqDistance_ )
-			{
-				if ( distance2 > vertexClusteringSqDistance_ ) counter++;
-				oldX = p.x() * mm;
-				oldY = p.y() * mm;
-				oldZ = p.z() * mm;
-			}
-		}
-	}
+// 			if ( difference2 > vertexClusteringSqDistance_ )
+// 			{
+// 				if ( distance2 > vertexClusteringSqDistance_ ) counter++;
+// 				oldX = p.x() * mm;
+// 				oldY = p.y() * mm;
+// 				oldZ = p.z() * mm;
+// 			}
+// 		}
+// 	}
 	
-	HistoryBase::SimParticleTrail & simParticleTrail = const_cast<HistoryBase::SimParticleTrail &> (tracer_.simParticleTrail());
+// 	HistoryBase::SimParticleTrail & simParticleTrail = const_cast<HistoryBase::SimParticleTrail &> (tracer_.simParticleTrail());
 	
-	// Loop over the generated particles
-	for (
-		HistoryBase::SimParticleTrail::reverse_iterator iparticle = simParticleTrail.rbegin();
-	iparticle != simParticleTrail.rend();
-	++iparticle
-	)
-	{
-		// Look for those with production vertex
-		TrackingParticle::Point p = (*iparticle)->vertex();
+// 	// Loop over the generated particles
+// 	for (
+// 		HistoryBase::SimParticleTrail::reverse_iterator iparticle = simParticleTrail.rbegin();
+// 	iparticle != simParticleTrail.rend();
+// 	++iparticle
+// 	)
+// 	{
+// 		// Look for those with production vertex
+// 		TrackingParticle::Point p = (*iparticle)->vertex();
 		
-		double distance2   = pow(p.x() - genpv.x, 2) + pow(p.y() - genpv.y, 2) + pow(p.z() - genpv.z, 2);
-		double difference2 = pow(p.x() - oldX, 2)    + pow(p.y() - oldY, 2)    + pow(p.z() - oldZ, 2);
+// 		double distance2   = pow(p.x() - genpv.x, 2) + pow(p.y() - genpv.y, 2) + pow(p.z() - genpv.z, 2);
+// 		double difference2 = pow(p.x() - oldX, 2)    + pow(p.y() - oldY, 2)    + pow(p.z() - oldZ, 2);
 		
-		// std::cout << "Distance2 : " << distance2 << " (" << p.x() << "," << p.y() << "," << p.z() << ")" << std::endl;
-		// std::cout << "Difference2 : " << difference2 << std::endl;
+// 		// std::cout << "Distance2 : " << distance2 << " (" << p.x() << "," << p.y() << "," << p.z() << ")" << std::endl;
+// 		// std::cout << "Difference2 : " << difference2 << std::endl;
 		
-		if ( difference2 > vertexClusteringSqDistance_ )
-		{
-			if ( distance2 > vertexClusteringSqDistance_ ) counter++;
-			oldX = p.x();
-			oldY = p.y();
-			oldZ = p.z();
-		}
-	}
+// 		if ( difference2 > vertexClusteringSqDistance_ )
+// 		{
+// 			if ( distance2 > vertexClusteringSqDistance_ ) counter++;
+// 			oldX = p.x();
+// 			oldY = p.y();
+// 			oldZ = p.z();
+// 		}
+// 	}
 	
-	return counter+1;
-}
+// 	return counter+1;
+// }
 
-bool VertexCategorizer::checkIsBad(reco::TrackBaseRef const & track, TrackingParticleRef const & tpr)
-{
+// bool VertexCategorizer::checkIsBad(reco::TrackBaseRef const & track, TrackingParticleRef const & tpr)
+// {
 	
-	// Compute tracking particle parameters at point of closest approach to the beamline
+// 	// Compute tracking particle parameters at point of closest approach to the beamline
 	
-	const SimTrack * assocTrack = &(*tpr->g4Track_begin());
+// 	const SimTrack * assocTrack = &(*tpr->g4Track_begin());
 	
-	FreeTrajectoryState ftsAtProduction(
-		GlobalPoint(
-			tpr->vertex().x(),
-					tpr->vertex().y(),
-					tpr->vertex().z()
-		),
-		GlobalVector(
-			assocTrack->momentum().x(),
-					 assocTrack->momentum().y(),
-					 assocTrack->momentum().z()
-		),
-		TrackCharge(track->charge()),
-										magneticField_.product()
-	);
+// 	FreeTrajectoryState ftsAtProduction(
+// 		GlobalPoint(
+// 			tpr->vertex().x(),
+// 					tpr->vertex().y(),
+// 					tpr->vertex().z()
+// 		),
+// 		GlobalVector(
+// 			assocTrack->momentum().x(),
+// 					 assocTrack->momentum().y(),
+// 					 assocTrack->momentum().z()
+// 		),
+// 		TrackCharge(track->charge()),
+// 										magneticField_.product()
+// 	);
 	
-	try
-	{
-		TSCPBuilderNoMaterial tscpBuilder;
-		TrajectoryStateClosestToPoint tsAtClosestApproach = tscpBuilder(
-			ftsAtProduction,
-			GlobalPoint(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0())
-		);
+// 	try
+// 	{
+// 		TSCPBuilderNoMaterial tscpBuilder;
+// 		TrajectoryStateClosestToPoint tsAtClosestApproach = tscpBuilder(
+// 			ftsAtProduction,
+// 			GlobalPoint(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0())
+// 		);
 		
-		GlobalVector v = tsAtClosestApproach.theState().position()
-		- GlobalPoint(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0());
-		GlobalVector p = tsAtClosestApproach.theState().momentum();
+// 		GlobalVector v = tsAtClosestApproach.theState().position()
+// 		- GlobalPoint(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0());
+// 		GlobalVector p = tsAtClosestApproach.theState().momentum();
 		
-		// Simulated dxy
-		double dxySim = -v.x()*sin(p.phi()) + v.y()*cos(p.phi());
+// 		// Simulated dxy
+// 		double dxySim = -v.x()*sin(p.phi()) + v.y()*cos(p.phi());
 		
-		// Simulated dz
-		double dzSim = v.z() - (v.x()*p.x() + v.y()*p.y())*p.z()/p.perp2();
+// 		// Simulated dz
+// 		double dzSim = v.z() - (v.x()*p.x() + v.y()*p.y())*p.z()/p.perp2();
 		
-		// Calculate the dxy pull
-		double dxyPull = std::abs(
-			track->dxy( reco::TrackBase::Point(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0()) ) - dxySim
-		) / track->dxyError();
+// 		// Calculate the dxy pull
+// 		double dxyPull = std::abs(
+// 			track->dxy( reco::TrackBase::Point(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0()) ) - dxySim
+// 		) / track->dxyError();
 		
-		// Calculate the dx pull
-		double dzPull = std::abs(
-			track->dz( reco::TrackBase::Point(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0()) ) - dzSim
-		) / track->dzError();
+// 		// Calculate the dx pull
+// 		double dzPull = std::abs(
+// 			track->dz( reco::TrackBase::Point(beamSpot_->x0(), beamSpot_->y0(), beamSpot_->z0()) ) - dzSim
+// 		) / track->dzError();
 		
-		// Return true if d0Pull > badD0Pull sigmas
-		return (dxyPull > badPull_ || dzPull > badPull_);
+// 		// Return true if d0Pull > badD0Pull sigmas
+// 		return (dxyPull > badPull_ || dzPull > badPull_);
 		
-	}
-	catch (cms::Exception exception)
-	{
-		return true;
-	}
-}
+// 	}
+// 	catch (cms::Exception exception)
+// 	{
+// 		return true;
+// 	}
+// }
 
-void VertexCategorizer::qualityInformation(HistoryBase::SimParticleTrail const & spt, reco::TrackBaseRef const & track)
-{
-	// run the hit-by-hit reconstruction quality analysis
-	std::cout << "TEST1" << std::endl;
-	quality_.evaluate(spt, track);
-	std::cout << "TEST2" << std::endl;
+// void VertexCategorizer::qualityInformation(HistoryBase::SimParticleTrail const & spt, reco::TrackBaseRef const & track)
+// {
+// 	// run the hit-by-hit reconstruction quality analysis
+// 	std::cout << "TEST1" << std::endl;
+// 	quality_.evaluate(spt, track);
+// 	std::cout << "TEST2" << std::endl;
 	
-	unsigned int maxLayers = std::min(numberOfInnerLayers_, quality_.numberOfLayers());
+// 	unsigned int maxLayers = std::min(numberOfInnerLayers_, quality_.numberOfLayers());
 	
-	// check the innermost layers for bad hits
-	for (unsigned int i = 0; i < maxLayers; i++)
-	{
-		const TrackQuality::Layer &layer = quality_.layer(i);
+// 	// check the innermost layers for bad hits
+// 	for (unsigned int i = 0; i < maxLayers; i++)
+// 	{
+// 		const TrackQuality::Layer &layer = quality_.layer(i);
 		
-		// check all hits in that layer
-		for (unsigned int j = 0; j < layer.hits.size(); j++)
-		{
-			const TrackQuality::Layer::Hit &hit = layer.hits[j];
+// 		// check all hits in that layer
+// 		for (unsigned int j = 0; j < layer.hits.size(); j++)
+// 		{
+// 			const TrackQuality::Layer::Hit &hit = layer.hits[j];
 			
-			// In those cases the bad hit was used by track reconstruction
-			if (hit.state == TrackQuality::Layer::Noise ||
-				hit.state == TrackQuality::Layer::Misassoc)
-				BadInnerHits_ = true;
-			else if (hit.state == TrackQuality::Layer::Shared)
-				SharedInnerHits_ = true;
-		}
-	}
-}
+// 			// In those cases the bad hit was used by track reconstruction
+// 			if (hit.state == TrackQuality::Layer::Noise ||
+// 				hit.state == TrackQuality::Layer::Misassoc)
+// 				BadInnerHits_ = true;
+// 			else if (hit.state == TrackQuality::Layer::Shared)
+// 				SharedInnerHits_ = true;
+// 		}
+// 	}
+// }
 
 /* METHOD BELOW FROM VERTEX CLASSIFIER! Works somehow different (using vertex clusters, I don't really understand it) but apparently
  * yields the same result, i.e. whether it is primary/secondary/tertiary vertex...
@@ -828,186 +875,168 @@ int VertexCategorizer::vertexInformationClust()
 //*/
 
 
-bool VertexCategorizer::isFinalstateParticle(const HepMC::GenParticle * p)
-{
-    return !p->end_vertex() && p->status() == 1;
-}
+// void VertexCategorizer::genPrimaryVertices(edm::Handle<TrackingVertexCollection> const & TVCollection)
+// {
+//     genpvs_.clear();
 
+//     const HepMC::GenEvent * event = mcInformation_->GetEvent();
 
-bool VertexCategorizer::isCharged(const HepMC::GenParticle * p)
-{
-    const ParticleData * part = particleDataTable_->particle( p->pdg_id() );
-    if (part)
-        return part->charge()!=0;
-    else
-    {
-        // the new/improved particle table doesn't know anti-particles
-        return  particleDataTable_->particle( -p->pdg_id() ) != 0;
-    }
-}
+//     if (event)
+//     {
+//         int idx = 0;
 
+//         // Loop over the different GenVertex
+//         for ( HepMC::GenEvent::vertex_const_iterator ivertex = event->vertices_begin(); ivertex != event->vertices_end(); ++ivertex )
+//         {
+//             bool hasParentVertex = false;
 
-void VertexCategorizer::genPrimaryVertices(edm::Handle<TrackingVertexCollection> const & TVCollection)
-{
-    genpvs_.clear();
+//             // Loop over the parents looking to see if they are coming from a production vertex
+//             for (
+//                 HepMC::GenVertex::particle_iterator iparent = (*ivertex)->particles_begin(HepMC::parents);
+//                 iparent != (*ivertex)->particles_end(HepMC::parents);
+//                 ++iparent
+//             )
+//                 if ( (*iparent)->production_vertex() )
+//                 {
+//                     hasParentVertex = true;
+//                     break;
+//                 }
 
-    const HepMC::GenEvent * event = mcInformation_->GetEvent();
+//             // Reject those vertices with parent vertices
+//             if (hasParentVertex) continue;
 
-    if (event)
-    {
-        int idx = 0;
+//             // Get the position of the vertex
+//             HepMC::FourVector pos = (*ivertex)->position();
 
-        // Loop over the different GenVertex
-        for ( HepMC::GenEvent::vertex_const_iterator ivertex = event->vertices_begin(); ivertex != event->vertices_end(); ++ivertex )
-        {
-            bool hasParentVertex = false;
+//             double const mm = 0.1;
 
-            // Loop over the parents looking to see if they are coming from a production vertex
-            for (
-                HepMC::GenVertex::particle_iterator iparent = (*ivertex)->particles_begin(HepMC::parents);
-                iparent != (*ivertex)->particles_end(HepMC::parents);
-                ++iparent
-            )
-                if ( (*iparent)->production_vertex() )
-                {
-                    hasParentVertex = true;
-                    break;
-                }
+//             GeneratedPrimaryVertex pv(pos.x()*mm, pos.y()*mm, pos.z()*mm);
 
-            // Reject those vertices with parent vertices
-            if (hasParentVertex) continue;
+//             std::vector<GeneratedPrimaryVertex>::iterator ientry = genpvs_.begin();
 
-            // Get the position of the vertex
-            HepMC::FourVector pos = (*ivertex)->position();
+//             // Search for a VERY close vertex in the list
+//             for (; ientry != genpvs_.end(); ++ientry)
+//             {
+//                 double distance = sqrt( pow(pv.x - ientry->x, 2) + pow(pv.y - ientry->y, 2) + pow(pv.z - ientry->z, 2) );
+//                 if ( distance < vertexClusteringSqDistance_ )
+//                     break;
+//             }
 
-            double const mm = 0.1;
+//             // Check if there is not a VERY close vertex and added to the list
+//             if (ientry == genpvs_.end())
+//                 ientry = genpvs_.insert(ientry,pv);
 
-            GeneratedPrimaryVertex pv(pos.x()*mm, pos.y()*mm, pos.z()*mm);
-
-            std::vector<GeneratedPrimaryVertex>::iterator ientry = genpvs_.begin();
-
-            // Search for a VERY close vertex in the list
-            for (; ientry != genpvs_.end(); ++ientry)
-            {
-                double distance = sqrt( pow(pv.x - ientry->x, 2) + pow(pv.y - ientry->y, 2) + pow(pv.z - ientry->z, 2) );
-                if ( distance < vertexClusteringSqDistance_ )
-                    break;
-            }
-
-            // Check if there is not a VERY close vertex and added to the list
-            if (ientry == genpvs_.end())
-                ientry = genpvs_.insert(ientry,pv);
-
-            // Add the vertex barcodes to the new or existent vertices
-            ientry->genVertex.push_back((*ivertex)->barcode());
+//             // Add the vertex barcodes to the new or existent vertices
+//             ientry->genVertex.push_back((*ivertex)->barcode());
 			
-			/// Look for close-by TVs to check their Event/BunchCrossing number
-// 			TrackingVertexCollection::const_iterator iTV = TVCollection->begin();
-// 			int TVindex = 0;
-// 			
-// 			for (; iTV != TVCollection->end(); ++iTV, ++TVindex){
-// 				double distance = sqrt( pow(pv.x - iTV->position().x(), 2) + pow(pv.y - iTV->position().y(), 2) + pow(pv.z - iTV->position().z(), 2) );
-// 				if ( distance < vertexClusteringSqDistance_ )
-// 					break;
+// 			/// Look for close-by TVs to check their Event/BunchCrossing number
+// // 			TrackingVertexCollection::const_iterator iTV = TVCollection->begin();
+// // 			int TVindex = 0;
+// // 			
+// // 			for (; iTV != TVCollection->end(); ++iTV, ++TVindex){
+// // 				double distance = sqrt( pow(pv.x - iTV->position().x(), 2) + pow(pv.y - iTV->position().y(), 2) + pow(pv.z - iTV->position().z(), 2) );
+// // 				if ( distance < vertexClusteringSqDistance_ )
+// // 					break;
+// // 			}
+// // 			
+// // 			if (iTV != TVCollection->end())
+// // 				std::cout << "TV close to Primary Vertex found! Event / BunchCrossing number / index: " << iTV->eventId().event() << " " << iTV->eventId().bunchCrossing() << " " << TVindex << std::endl;
+// // 			else std::cout << "No TV close to Primary Vertex found!" << std::endl;
+
+//             // Collect final state descendants
+//             for (
+//                 HepMC::GenVertex::particle_iterator idecendants  = (*ivertex)->particles_begin(HepMC::descendants);
+//                 idecendants != (*ivertex)->particles_end(HepMC::descendants);
+//                 ++idecendants
+//             )
+//             {
+//                 if (isFinalstateParticle(*idecendants))
+//                     if ( find(ientry->finalstateParticles.begin(), ientry->finalstateParticles.end(), (*idecendants)->barcode()) == ientry->finalstateParticles.end() )
+//                     {
+//                         ientry->finalstateParticles.push_back((*idecendants)->barcode());
+//                         HepMC::FourVector m = (*idecendants)->momentum();
+
+//                         ientry->ptot.setPx(ientry->ptot.px() + m.px());
+//                         ientry->ptot.setPy(ientry->ptot.py() + m.py());
+//                         ientry->ptot.setPz(ientry->ptot.pz() + m.pz());
+//                         ientry->ptot.setE(ientry->ptot.e() + m.e());
+//                         ientry->ptsq += m.perp() * m.perp();
+
+//                         if ( m.perp() > 0.8 && std::abs(m.pseudoRapidity()) < 2.5 && isCharged(*idecendants) ) ientry->nGenTrk++;
+//                     }
+//             }
+//             idx++;
+//         }
+//     }
+
+//     std::sort(genpvs_.begin(), genpvs_.end());
+// }
+
+// TrackingParticleRef VertexCategorizer::getSourceTrack(TrackingVertexRef const & evaluatedVertex) const
+// {
+// 	TrackingParticleRef output;
+	
+// 	TrackingVertex::tp_iterator itd, its;
+	
+// 	for (its = evaluatedVertex->sourceTracks_begin(); its != evaluatedVertex->sourceTracks_end(); ++its)
+// 	{
+// 		bool flag = false;
+// 		for (itd = evaluatedVertex->daughterTracks__begin(); itd != evaluatedVertex->daughterTracks__end(); ++itd)
+// 		{
+// 			if (itd == its)
+// 			{
+// 				flag = true;
 // 			}
-// 			
-// 			if (iTV != TVCollection->end())
-// 				std::cout << "TV close to Primary Vertex found! Event / BunchCrossing number / index: " << iTV->eventId().event() << " " << iTV->eventId().bunchCrossing() << " " << TVindex << std::endl;
-// 			else std::cout << "No TV close to Primary Vertex found!" << std::endl;
+// 		}
+// 		if (!flag)
+// 			break;
+// 	}
+	
+// 	// Collect the pdgid of the original source track
+// 	if ( its != evaluatedVertex->sourceTracks_end() )
+// 		output = *its;
+	
+// 	return output;
+// }
 
-            // Collect final state descendants
-            for (
-                HepMC::GenVertex::particle_iterator idecendants  = (*ivertex)->particles_begin(HepMC::descendants);
-                idecendants != (*ivertex)->particles_end(HepMC::descendants);
-                ++idecendants
-            )
-            {
-                if (isFinalstateParticle(*idecendants))
-                    if ( find(ientry->finalstateParticles.begin(), ientry->finalstateParticles.end(), (*idecendants)->barcode()) == ientry->finalstateParticles.end() )
-                    {
-                        ientry->finalstateParticles.push_back((*idecendants)->barcode());
-                        HepMC::FourVector m = (*idecendants)->momentum();
-
-                        ientry->ptot.setPx(ientry->ptot.px() + m.px());
-                        ientry->ptot.setPy(ientry->ptot.py() + m.py());
-                        ientry->ptot.setPz(ientry->ptot.pz() + m.pz());
-                        ientry->ptot.setE(ientry->ptot.e() + m.e());
-                        ientry->ptsq += m.perp() * m.perp();
-
-                        if ( m.perp() > 0.8 && std::abs(m.pseudoRapidity()) < 2.5 && isCharged(*idecendants) ) ientry->nGenTrk++;
-                    }
-            }
-            idx++;
-        }
-    }
-
-    std::sort(genpvs_.begin(), genpvs_.end());
-}
-
-TrackingParticleRef VertexCategorizer::getSourceTrack(TrackingVertexRef const & evaluatedVertex) const
-{
-	TrackingParticleRef output;
+// int VertexCategorizer::getLongLivedGenParticle(TrackingVertexRef const & tv) const {
 	
-	TrackingVertex::tp_iterator itd, its;
+// 	HistoryBase::GenVertexTrailHelper genVertexTrailHelper;
 	
-	for (its = evaluatedVertex->sourceTracks_begin(); its != evaluatedVertex->sourceTracks_end(); ++its)
-	{
-		bool flag = false;
-		for (itd = evaluatedVertex->daughterTracks_begin(); itd != evaluatedVertex->daughterTracks_end(); ++itd)
-		{
-			if (itd == its)
-			{
-				flag = true;
-			}
-		}
-		if (!flag)
-			break;
-	}
+// 	int pdgid = 0;
 	
-	// Collect the pdgid of the original source track
-	if ( its != evaluatedVertex->sourceTracks_end() )
-		output = *its;
-	
-	return output;
-}
-
-int VertexCategorizer::getLongLivedGenParticle(TrackingVertexRef const & tv) const {
-	
-	HistoryBase::GenVertexTrailHelper genVertexTrailHelper;
-	
-	int pdgid = 0;
-	
-	for (TrackingVertex::genv_iterator iGV = tv->genVertices_begin(); iGV != tv->genVertices_end(); ++iGV){
+// 	for (TrackingVertex::genv_iterator iGV = tv->genVertices_begin(); iGV != tv->genVertices_end(); ++iGV){
 		
-		HepMC::GenVertex const * genVertex = &(**iGV);
+// 		HepMC::GenVertex const * genVertex = &(**iGV);
 		
-		if ( genVertexTrailHelper.find(genVertex) != genVertexTrailHelper.end() )
-			continue;
+// 		if ( genVertexTrailHelper.find(genVertex) != genVertexTrailHelper.end() )
+// 			continue;
 		
-		genVertexTrailHelper.insert(genVertex);
+// 		genVertexTrailHelper.insert(genVertex);
 		
-		if ( genVertex->particles_in_size() )
-		{
-			double travelDistance; // in mm
-			HepMC::GenVertex const * parentVertex = (*genVertex->particles_in_const_begin())->production_vertex();
-			if (parentVertex)
-				travelDistance = distanceToPrevGenVertex(genVertex, parentVertex);
-			else
-				travelDistance = 0;
+// 		if ( genVertex->particles_in_size() )
+// 		{
+// 			double travelDistance; // in mm
+// 			HepMC::GenVertex const * parentVertex = (*genVertex->particles_in_const_begin())->production_vertex();
+// 			if (parentVertex)
+// 				travelDistance = distanceToPrevGenVertex(genVertex, parentVertex);
+// 			else
+// 				travelDistance = 0;
 			
-			if (travelDistance > 0.01)	/// KEEP THIS VALUE? MAKE THIS AN INPUT TO THE ANALYZER?
-			{
-				pdgid = std::abs((*genVertex->particles_in_const_begin())->pdg_id());
-				break;
-			}
-		}
-	}
+// 			if (travelDistance > 0.01)	/// KEEP THIS VALUE? MAKE THIS AN INPUT TO THE ANALYZER?
+// 			{
+// 				pdgid = std::abs((*genVertex->particles_in_const_begin())->pdg_id());
+// 				break;
+// 			}
+// 		}
+// 	}
 	
-	return pdgid;
+// 	return pdgid;
 	
 	
-	//! only fill genVertexTrailHelper to check if GenVertex already existed
-	//         genVertexTrail_.push_back(genVertex);
-	// Verify if the vertex has incoming particles
+// 	//! only fill genVertexTrailHelper to check if GenVertex already existed
+// 	//         genVertexTrail_.push_back(genVertex);
+// 	// Verify if the vertex has incoming particles
 	
-}
+// }
+
