@@ -7,6 +7,9 @@
 <use name="DataFormats/BTauReco"/>
 <use name="CommonTools/Statistics"/>
 <use name="TrackingTools/TransientTrack"/>
+<use name="TrackingTools/IPTools"/>
+<use name="Geometry/Records"/>
+<use name="Geometry/TrackerGeometryBuilder"/>
 <use name="SimGeneral/HepPDTRecord"/>
 <use name="SimTracker/Records"/>
 <use name="SimTracker/TrackAssociation"/>
@@ -21,6 +24,6 @@
 <use name="clhep"/>
 <use name="rootcore"/>
 <use name="root"/>
-<library file="*.cc" name="ValidationRecoBPlugins">
+<library file="BTagPerformanceAnalyzerMC.cc recoBSVTagInfoValidationAnalyzer.cc" name="ValidationRecoBPlugins">
   <flags EDM_PLUGIN="1"/>
 </library>
