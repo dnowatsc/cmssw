@@ -177,7 +177,15 @@ void TrackCategorizer::evaluate (TrackMCInformation & trackMcInfo)
 {
 
     std::cout << "    Track " << trackCount++ << ": " << std::endl;
-    std::cout << "      Reco mother position: " << trackMcInfo.recoTrackRef->vertex().x() << "|" << trackMcInfo.recoTrackRef->vertex().y() << "|" << trackMcInfo.recoTrackRef->vertex().z() << std::endl;
+    std::cout << "      Number of mothers: " << trackMcInfo.candRef->numberOfMothers() << std::endl;
+    std::cout << "      Reco mother position 1: " << trackMcInfo.recoTrackRef->vertex().x() << "|" << trackMcInfo.recoTrackRef->vertex().y() << "|" << trackMcInfo.recoTrackRef->vertex().z() << std::endl;
+    if (trackMcInfo.candRef->mother())
+    	std::cout << "      Reco mother position 2: " << trackMcInfo.candRef->mother()->vx() << "|" << trackMcInfo.candRef->mother()->vy() << "|" << trackMcInfo.candRef->mother()->vz() << std::endl;
+    else std::cout << "      !!No trackMcInfo.candRef->mother()!!" << std::endl;
+    
+    // std::cout << "      Reco mother position 2: " << trackMcInfo.candRef->mother()->vx() << "|" << trackMcInfo.candRef->mother()->vy() << "|" << trackMcInfo.candRef->mother()->vz() << std::endl;
+
+
 
     trackMcInfo.numberMatches = trackRecoToSim_[trackMcInfo.recoTrackRef].size();
 
@@ -185,7 +193,8 @@ void TrackCategorizer::evaluate (TrackMCInformation & trackMcInfo)
 	
 	TrackingParticleRef tpr( result.first );
 
-	std::cout << "      True mother position: " << tpr->parentVertex()->position().x() << "|" << tpr->parentVertex()->position().y() << "|" << tpr->parentVertex()->position().z() << std::endl;
+	std::cout << "      Number of matches: " << trackMcInfo.numberMatches << std::endl;
+	std::cout << "      True mother position / matching quality: " << tpr->parentVertex()->position().x() << "|" << tpr->parentVertex()->position().y() << "|" << tpr->parentVertex()->position().z() << " / " << result.second << std::endl;
 
 	trackMcInfo.matchingQuality = result.second;
 
@@ -194,6 +203,7 @@ void TrackCategorizer::evaluate (TrackMCInformation & trackMcInfo)
 
 		HistoryBase::evaluate(tpr);
 		trackMcInfo.vertexType = vertexInformationDist(this->genParticleTrail(), this->simParticleTrail());
+		std::cout << "      Mother vertex type: " << trackMcInfo.vertexType << std::endl;
 
 
 		// 	std::cout << " | " << vertexKindDist;

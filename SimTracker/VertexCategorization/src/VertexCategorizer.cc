@@ -129,9 +129,9 @@ VertexCategorizer::VertexCategorizer(edm::Event const & event, edm::EventSetup c
 		reco::VertexCompositePtrCandidate const & vCand = (*vertexCollection_)[iVertex];
 
 
-		std::cout << "Vertex " << iVertex << ":" << std::endl;
-		std::cout << "  Position 1: " << vertRef->vx() << "|" << vertRef->vy() << "|" << vertRef->vz() << std::endl << std::endl;
-		std::cout << "  Track Positions 1:" << std::endl;
+		// std::cout << "Vertex " << iVertex << ":" << std::endl;
+		// std::cout << "  Position 1: " << vertRef->vx() << "|" << vertRef->vy() << "|" << vertRef->vz() << std::endl << std::endl;
+		// std::cout << "  Track Positions 1:" << std::endl;
 
 		for (size_t iDaughter = 0; iDaughter < vCand.numberOfSourceCandidatePtrs(); ++iDaughter)
 		{
@@ -142,11 +142,11 @@ VertexCategorizer::VertexCategorizer(edm::Event const & event, edm::EventSetup c
 				if (&(*trackPtr) == daughterTrack)
 				{
 					newVertex.daughterTracks.push_back(trackPtr);
-					std::cout << "    Track " << iDaughter << ":" << std::endl;
-					std::cout << "      Reco mother position 1: " << vCand.sourceCandidatePtr(iDaughter)->vx() << "|" << vCand.sourceCandidatePtr(iDaughter)->vy() << "|" << vCand.sourceCandidatePtr(iDaughter)->vz() << std::endl;
-					std::cout << "      Reco mother position 2: " << vCand.daughterPtr(iDaughter)->vx() << "|" << vCand.daughterPtr(iDaughter)->vy() << "|" << vCand.daughterPtr(iDaughter)->vz() << std::endl;
-					std::cout << "      Reco mother position 3: " << trackPtr->vertex().x() << "|" << trackPtr->vertex().y() << "|" << trackPtr->vertex().z() << std::endl;
-					std::cout << "      Reco mother position 4: " << trackPtr->referencePoint().x() << "|" << trackPtr->referencePoint().y() << "|" << trackPtr->referencePoint().z() << std::endl;
+					// std::cout << "    Track " << iDaughter << ":" << std::endl;
+					// std::cout << "      Reco mother position 1: " << vCand.sourceCandidatePtr(iDaughter)->vx() << "|" << vCand.sourceCandidatePtr(iDaughter)->vy() << "|" << vCand.sourceCandidatePtr(iDaughter)->vz() << std::endl;
+					// std::cout << "      Reco mother position 2: " << vCand.daughterPtr(iDaughter)->vx() << "|" << vCand.daughterPtr(iDaughter)->vy() << "|" << vCand.daughterPtr(iDaughter)->vz() << std::endl;
+					// std::cout << "      Reco mother position 3: " << trackPtr->vertex().x() << "|" << trackPtr->vertex().y() << "|" << trackPtr->vertex().z() << std::endl;
+					// std::cout << "      Reco mother position 4: " << trackPtr->referencePoint().x() << "|" << trackPtr->referencePoint().y() << "|" << trackPtr->referencePoint().z() << std::endl;
 
 				}
 			}
@@ -154,7 +154,7 @@ VertexCategorizer::VertexCategorizer(edm::Event const & event, edm::EventSetup c
 				std::cout << "Track " << iDaughter << ": " << daughterTrack->pt() << " | " << newVertex.daughterTracks[newVertex.daughterTracks.size()-1]->pt() << std::endl;
 		}
 
-		std::cout << std::endl;
+		// std::cout << std::endl;
 
 		analyzedVertices_.push_back(newVertex);
 	}
@@ -205,7 +205,9 @@ void VertexCategorizer::evaluate(edm::ParameterSet const & config, VertexMCInfor
 
 	trackCategorizer.newTrackCollection(vertInfo.daughterTracks);
 
-	std::cout << "  Vertex " << vertexCount++ << ", Track Positions 2:" << std::endl;
+	std::cout << "  Vertex " << vertexCount++ << std::endl;
+	std::cout << "  Position: " << vertInfo.vertexRef->vx() << "|" << vertInfo.vertexRef->vy() << "|" << vertInfo.vertexRef->vz() << std::endl << std::endl;
+
 	trackCategorizer.evaluate();
 	std::cout << std::endl;
 
