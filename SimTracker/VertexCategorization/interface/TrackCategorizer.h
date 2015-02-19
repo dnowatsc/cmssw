@@ -47,14 +47,6 @@
 #include "SimTracker/VertexCategorization/interface/CategoryClasses.h"
 
 
-namespace reco
-{
-	typedef edm::RefToBase<reco::Vertex> VertexBaseRef;
-	typedef edm::AssociationMap<edm::OneToManyWithQuality <TrackingVertexCollection, edm::View<reco::Vertex>, double> > VertexSimToRecoCollection;
-	typedef edm::AssociationMap<edm::OneToManyWithQuality <edm::View<reco::Vertex>, TrackingVertexCollection, double> > VertexRecoToSimCollection;
-}
-
-//! Get track history and classify it in function of their .
 class TrackCategorizer : HistoryBase
 {
 
@@ -80,17 +72,12 @@ public:
         std::vector<int> genVertex;
     };
 
-    //! Constructor by ParameterSet
     TrackCategorizer(edm::Event const &, edm::EventSetup const &, edm::ParameterSet const &);
 
     virtual ~TrackCategorizer() {}
 
-    //! Pre-process event information (for accessing reconstraction information)
-    // virtual void newEvent();
-
     virtual void newTrackCollection(edm::RefToBaseVector<reco::Track> const &);
 
-    //! Classify the RecoVertex in categories.
     virtual void evaluate (TrackMCInformation &);
 
     virtual void evaluate ()
@@ -103,11 +90,6 @@ public:
     {
     	return analyzedTracks_;
     }
-    //! Returns a reference to the vertex history used in the classification.
-	// HistoryBase const & history() const
-	// {
-	//     return tracer_;
-	// }
 
 private:
 
@@ -184,25 +166,6 @@ private:
 	std::vector<GeneratedPrimaryVertex> genpvs_;
 
 	std::vector<TrackMCInformation> analyzedTracks_;
-	
-	
-	// void qualityInformation(HistoryBase::SimParticleTrail const &, reco::TrackBaseRef const &);
-	
-	// edm::InputTag trackProducer_;
-	// edm::InputTag trackingTruth_;
-	// std::string trackAssociator_;
-
-	// HistoryBase tracer_;	/// switch to different/own History class? maybe can be optimized... => try to understand HistoryBase code better
-
-    // Get geometrical information about the vertices
-// 	int vertexInformationClust();
-// 
-
-    // Auxiliary function to get the generated primary vertex
-	
- 	// bool isFinalstateParticle(const HepMC::GenParticle *);
- 	// bool isCharged(const HepMC::GenParticle *);
-	// void genPrimaryVertices(edm::Handle<TrackingVertexCollection> const &);
 
 };
 

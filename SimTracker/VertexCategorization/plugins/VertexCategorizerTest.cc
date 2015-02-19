@@ -34,6 +34,11 @@
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "HepPDT/ParticleID.hh"
+
+#include "TH2F.h"
+
 //
 // class decleration
 //
@@ -46,6 +51,30 @@ public:
 
 private:
 
+    struct G4
+    {
+        enum Process
+        {
+            Undefined = 0,
+            Unknown,
+            Primary,
+            Hadronic,
+            Decay,
+            Compton,
+            Annihilation,
+            EIoni,
+            HIoni,
+            MuIoni,
+            Photon,
+            MuPairProd,
+            Conversions,
+            EBrem,
+            SynchrotronRadiation,
+            MuBrem,
+            MuNucl
+        };
+    };
+
     virtual void beginRun(const edm::Run&,const edm::EventSetup&);
     virtual void beginJob() ;
     virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -57,6 +86,8 @@ private:
     const edm::ParameterSet pSet;
 
     TH1F *geantProcessTypes, *cmsProcessTypes;
+    TH1F *bRhoTight, *bRhoMed, *bRhoLoose, *niRhoTight, *niRhoMed, *niRhoLoose;
+    TH2F *bRho2D, *niRho2D;
 
     // edm::ESHandle<ParticleDataTable> pdt_;
 
@@ -71,6 +102,16 @@ VertexCategorizerTest::VertexCategorizerTest(const edm::ParameterSet& config) :
 
     geantProcessTypes = fs->make<TH1F>("GeantTypes", "Geant Process Types", 300, -0.5, 300 - 0.5);
     cmsProcessTypes = fs->make<TH1F>("CMSTypes", "CMS Process Types", 300, -0.5, 300 - 0.5);
+    bRhoTight = fs->make<TH1F>("bRhoTight", "B Rho (Tight)", 240, 0., 12.);
+    bRhoTight = fs->make<TH1F>("bRhoTight", "B Rho (Tight)", 240, 0., 12.);
+    bRhoTight = fs->make<TH1F>("bRhoTight", "B Rho (Tight)", 240, 0., 12.);
+    niRhoTight = fs->make<TH1F>("niRhoTight", "NI Rho (Tight)", 240, 0., 12.);
+    niRhoTight = fs->make<TH1F>("niRhoTight", "NI Rho (Tight)", 240, 0., 12.);
+    niRhoTight = fs->make<TH1F>("niRhoTight", "NI Rho (Tight)", 240, 0., 12.);
+    bRho2D = fs->make<TH2F>("bRho2D", ";Vertex Rho;b fraction", 240, 0., 12., 130, 0., 13.);
+    niRho2D = fs->make<TH2F>("niRho2D", ";Vertex Rho;ni fraction", 240, 0., 12., 130, 0., 13.);
+
+
 
 }
 
@@ -94,12 +135,45 @@ void VertexCategorizerTest::analyze(const edm::Event& event, const edm::EventSet
 
     for (const VertexMCInformation & vertInfo : vertexCategorizer.returnAnalyzedVertices())
     {
+        double total_weight = 0.;
+        double b_weight = 0.;
+        double ni_weight = 0.;
         for (const TrackMCInformation & trackInfo : vertInfo.analyzedTracks)
         {
             geantProcessTypes->Fill(trackInfo.geantProcessType);
             cmsProcessTypes->Fill(trackInfo.cmsProcessType);
 
+            total_weight++;
+            HepPDT::ParticleID particleID(std::abs(trackInfo.motherParticleID));
+            if (particleID.hasBottom())
+                b_weight++;
+            else if (trackInfo.cmsProcessType == G4::Hadronic)
+                ni_weight++;
         }
+
+        double b_frac = (total_weight) ? b_weight/total_weight : -1.;
+        double ni_frac = (total_weight) ? ni_weight/total_weight : -1.;
+
+        double vertRho = std::sqrt(vertInfo.vertexRef->vx()*vertInfo.vertexRef->vx() + vertInfo.vertexRef->vy()*vertInfo.vertexRef->vy());
+
+        if (b_frac > 0.9)
+            bRhoTight->Fill(vertRho);
+        else if (b_frac > 0.5)
+            bRhoTight->Fill(vertRho);
+        else if (b_frac > 0.1)
+            bRhoTight->Fill(vertRho);
+
+        if (ni_frac > 0.9)
+            niRhoTight->Fill(vertRho);
+        else if (ni_frac > 0.5)
+            niRhoTight->Fill(vertRho);
+        else if (ni_frac > 0.1)
+            niRhoTight->Fill(vertRho);
+
+        bRho2D->Fill(vertRho, b_frac);
+        niRho2D->Fill(vertRho, ni_frac);
+
+
     }
 
 
@@ -109,7 +183,7 @@ void VertexCategorizerTest::analyze(const edm::Event& event, const edm::EventSet
 	// }
 
     // Get a constant reference to the track history associated to the classifier
-//     VertexHistory const & tracer = vertexClassifier_.history();
+    // VertexHistory const & tracer = vertexClassifier_.history();
 
     // Loop over the track collection.
     

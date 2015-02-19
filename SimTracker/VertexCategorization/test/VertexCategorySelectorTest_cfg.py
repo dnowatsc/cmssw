@@ -29,6 +29,24 @@ process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
     #cut = cms.string("is('BWeakDecay') && !is('CWeakDecay')")
 #)
 
+# process.MessageLogger = cms.Service(
+#     "MessageLogger",
+#     destinations = cms.untracked.vstring(
+#         'logInfo',
+#         'cout'
+#          ),
+#     logInfo = cms.untracked.PSet(
+#         threshold = cms.untracked.string('DEBUG')
+#          ),
+#     cout = cms.untracked.PSet(
+#         threshold = cms.untracked.string('DEBUG')
+#          ),
+#     debugModules = cms.untracked.vstring(
+#         'vertexHistoryAnalyzer'
+#         )
+#     )
+
+
 process.add_( 
   cms.Service("TFileService",
       fileName = cms.string("VertexCategoriesAnalyzer_00_test.root")
@@ -47,7 +65,7 @@ process.GlobalTag.globaltag = 'MCRUN2_72_V3::All'
 
 process.p = cms.Path(process.inclusiveCandidateVertexing * process.vertexHistoryAnalyzer) #process.svTagInfoProxy * process.vertexSelector *
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring() 
 process.source = cms.Source ("PoolSource",fileNames = readFiles) 

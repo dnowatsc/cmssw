@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
 #include "HepPDT/ParticleID.hh"
 
 #include "SimTracker/VertexCategorization/interface/TrackCategorizer.h"
@@ -87,10 +89,6 @@ TrackCategorizer::TrackCategorizer(edm::Event const & event, edm::EventSetup con
 
 	HistoryBase::depth(-2);
 	bestMatchByMaxValue_ = config.getUntrackedParameter<bool>("bestMatchByMaxValue");
-	// trackProducer_ = config.getUntrackedParameter<edm::InputTag>("trackProducer");
-    
-	// Set the history depth after hadronization
-	// tracer_.depth(-2);
 
     // Set the minimum decay length for detecting long decays
 	// longLivedDecayLength_ = config.getUntrackedParameter<double>("longLivedDecayLength");
@@ -102,31 +100,20 @@ TrackCategorizer::TrackCategorizer(edm::Event const & event, edm::EventSetup con
 	
 	// Set the number of innermost layers to check for bad hits
 	// numberOfInnerLayers_ = config.getUntrackedParameter<unsigned int>("numberOfInnerLayers");
-
-    // Get the new event information for the tracer
-	// tracer_.newEvent(event, setup);
-    // Get hepmc of the event
 	
 	setup.get<IdealMagneticFieldRecord>().get(magneticField_);
 
-    // Get the partivle data table
     setup.getData(particleDataTable_);
 	
-	// get the beam spot
 	event.getByLabel(beamSpotLabel_, beamSpot_);
 
 	event.getByLabel(hepMCLabel_, mcInformation_);
 
 	event.getByLabel(candidatesLabel_, candidates_);
 
-	// Get the track associator
 	setup.get<TrackAssociatorRecord>().get(trackAssociatorProducer_, trackAssociator_);
 
 	genPrimaryVertices();
-
-
-    // Create the list of primary vertices associated to the event
-	// genPrimaryVertices(TVCollection);
 
 	// create a RefVector from the TrackingParticle collection; needed for the qTABH to work with a RefToBaseVector<reco::Track>
 
@@ -138,17 +125,7 @@ TrackCategorizer::TrackCategorizer(edm::Event const & event, edm::EventSetup con
 		tpRefVec_.push_back(tpRef);
 	}
 
-
-	
-	// 	std::cout << "GenPrimVert size: " << genpvs_.size() << std::endl << std::endl;
-	
-	// 	PUVerticesFinder(TVCollection);
 }
-
-
-// void TrackCategorizer::newEvent()
-// {
-// }
 
 void TrackCategorizer::newTrackCollection(edm::RefToBaseVector<reco::Track> const & trackRefs)
 {
@@ -167,7 +144,6 @@ void TrackCategorizer::newTrackCollection(edm::RefToBaseVector<reco::Track> cons
 			if (&(*newTrackMCInfo.recoTrackRef) == candTrack)
 				newTrackMCInfo.candRef = candidates_->refAt(iCand);
 		}
-		// newTrackMCInfo.tpRefWithQualityPairs = iMatch->val;
 		analyzedTracks_.push_back(newTrackMCInfo);
 	}
 }
@@ -176,12 +152,12 @@ void TrackCategorizer::newTrackCollection(edm::RefToBaseVector<reco::Track> cons
 void TrackCategorizer::evaluate (TrackMCInformation & trackMcInfo)
 {
 
-    std::cout << "    Track " << trackCount++ << ": " << std::endl;
-    std::cout << "      Number of mothers: " << trackMcInfo.candRef->numberOfMothers() << std::endl;
-    std::cout << "      Reco mother position 1: " << trackMcInfo.recoTrackRef->vertex().x() << "|" << trackMcInfo.recoTrackRef->vertex().y() << "|" << trackMcInfo.recoTrackRef->vertex().z() << std::endl;
-    if (trackMcInfo.candRef->mother())
-    	std::cout << "      Reco mother position 2: " << trackMcInfo.candRef->mother()->vx() << "|" << trackMcInfo.candRef->mother()->vy() << "|" << trackMcInfo.candRef->mother()->vz() << std::endl;
-    else std::cout << "      !!No trackMcInfo.candRef->mother()!!" << std::endl;
+	if (VertexCategorizer::messageOutput)
+    {
+    	std::cout << "    Track " << trackCount++ << ": " << std::endl;
+        // std::cout << "      Reco mother position 1: " << trackMcInfo.recoTrackRef->vertex().x() << "|" << trackMcInfo.recoTrackRef->vertex().y() << "|" << trackMcInfo.recoTrackRef->vertex().z() << std::endl;
+        std::cout << "      Reco mother rho: " << trackMcInfo.recoTrackRef->vertex().rho() << std::endl;
+    }
     
     // std::cout << "      Reco mother position 2: " << trackMcInfo.candRef->mother()->vx() << "|" << trackMcInfo.candRef->mother()->vy() << "|" << trackMcInfo.candRef->mother()->vz() << std::endl;
 
@@ -193,8 +169,11 @@ void TrackCategorizer::evaluate (TrackMCInformation & trackMcInfo)
 	
 	TrackingParticleRef tpr( result.first );
 
-	std::cout << "      Number of matches: " << trackMcInfo.numberMatches << std::endl;
-	std::cout << "      True mother position / matching quality: " << tpr->parentVertex()->position().x() << "|" << tpr->parentVertex()->position().y() << "|" << tpr->parentVertex()->position().z() << " / " << result.second << std::endl;
+	if (VertexCategorizer::messageOutput)
+	{
+		std::cout << "      Number of matches: " << trackMcInfo.numberMatches << std::endl;
+		std::cout << "      True mother position / matching quality: " << tpr->parentVertex()->position().rho() << " / " << result.second << std::endl;
+	}
 
 	trackMcInfo.matchingQuality = result.second;
 
@@ -203,7 +182,8 @@ void TrackCategorizer::evaluate (TrackMCInformation & trackMcInfo)
 
 		HistoryBase::evaluate(tpr);
 		trackMcInfo.vertexType = vertexInformationDist(this->genParticleTrail(), this->simParticleTrail());
-		std::cout << "      Mother vertex type: " << trackMcInfo.vertexType << std::endl;
+		if (VertexCategorizer::messageOutput)
+			std::cout << "      Mother vertex type: " << trackMcInfo.vertexType << std::endl;
 
 
 		// 	std::cout << " | " << vertexKindDist;
@@ -233,114 +213,12 @@ void TrackCategorizer::evaluate (TrackMCInformation & trackMcInfo)
 		trackMcInfo.bInHistory = (checkBInHistory(this->genParticleTrail()) || checkBInHistory(this->simParticleTrail()));
 
 			
-		// 	if (vertexKindDist == 1){
-		// 		flags_[PrimaryVertex] += recoDaughterWeight;
-		// 	}
-		// 	else {
-		// 		if (tpr->trackPSimHit().empty()){
-		// 			flags_[UnknownProcess] += recoDaughterWeight;
-		// 			continue;
-		// 		}
-
-		// 		unsigned short process = tpr->pSimHit_begin()->processType();
-
-		// 		std::cout << " | " << process;
-
-		// 		if (process == G4::Hadronic) flags_[HadronicProcess] += recoDaughterWeight;
-		// 		if (process == G4::Unknown) flags_[UnknownProcess] += recoDaughterWeight;
-		// 		if (process == G4::Undefined) flags_[UndefinedProcess] += recoDaughterWeight;
-		// 		if (process == G4::Compton) flags_[ComptonProcess] += recoDaughterWeight;
-		// 		if (process == G4::Annihilation) flags_[AnnihilationProcess] += recoDaughterWeight;
-		// 		if (process == G4::EIoni) flags_[EIoniProcess] += recoDaughterWeight;
-		// 		if (process == G4::HIoni) flags_[HIoniProcess] += recoDaughterWeight;
-		// 		if (process == G4::MuIoni) flags_[MuIoniProcess] += recoDaughterWeight;
-		// 		if (process == G4::Photon) flags_[PhotonProcess] += recoDaughterWeight;
-		// 		if (process == G4::MuPairProd) flags_[MuPairProdProcess] += recoDaughterWeight;
-		// 		if (process == G4::EBrem) flags_[EBremProcess] += recoDaughterWeight;
-		// 		if (process == G4::SynchrotronRadiation) flags_[SynchrotronRadiationProcess] += recoDaughterWeight;
-		// 		if (process == G4::MuBrem) flags_[MuBremProcess] += recoDaughterWeight;
-		// 		if (process == G4::Conversions) flags_[ConversionsProcess] += recoDaughterWeight;
-		// 		if (process == G4::MuNucl) flags_[MuNuclProcess] += recoDaughterWeight;
-
-		// 		if (process == G4::Primary || process == G4::Decay){
-		// 			int pdgid = 0;
-
-		// 			if (tpr->parentVertex()->nSourceTracks()){
-
-		// 				TrackingParticleRef const & selectedTrack = getSourceTrack(tpr->parentVertex());
-
-		// 				if (!selectedTrack.isNull())
-		// 					pdgid = selectedTrack->pdgId();
-
-		// 			} else if (tpr->parentVertex()->nGenVertices()){
-		// 				pdgid = getLongLivedGenParticle(tpr->parentVertex());
-		// 			}
-
-		// 			std::cout << " | " << pdgid;
-
-		// 			if (!pdgid){
-		// 				flags_[UnknownDecay] += recoDaughterWeight;
-		// 				continue;
-		// 			}
-
-		// 			HepPDT::ParticleID particleID(std::abs(pdgid));
-
-		// 				// Check if the particle type is valid one
-		// 			if (particleID.isValid())
-		// 			{
-		// 					// Check for B and C weak decays
-		// 				if (particleID.hasBottom()) flags_[BWeakDecay] += recoDaughterWeight;
-		// 				else if (checkBInHistory(tracer_.genParticleTrail()) || checkBInHistory(tracer_.simParticleTrail())){
-		// 					if (particleID.hasCharm()) flags_[CFromBDecay] += recoDaughterWeight;
-		// 					else flags_[OtherFromBDecay] += recoDaughterWeight;
-		// 				}
-		// 				else {
-		// 					if (particleID.hasCharm()) flags_[CWeakDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 211) flags_[ChargePionDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 321) flags_[ChargeKaonDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 15) flags_[TauDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 310) flags_[KsDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 3122) flags_[LambdaDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 443) flags_[JpsiDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 3312) flags_[XiDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 3334) flags_[OmegaDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 3222) flags_[SigmaPlusDecay] += recoDaughterWeight;
-		// 					if (std::abs(pdgid) == 3112) flags_[SigmaMinusDecay] += recoDaughterWeight;
-		// 				}
-
-
-		// 				// Check for B or C pure leptonic decays
-		// 				// int daughtId = abs((*iparticle)->pdgId());
-		// 				// update(flags_[FromBWeakDecayMuon], particleID.hasBottom() && daughtId == 13);
-		// 				// update(flags_[FromCWeakDecayMuon], particleID.hasCharm() && daughtId == 13);
-
-		// 			}
-		// 		}
-		// 	}
-				
-		// 		/// DON'T CHECK QUALITY FOR NOW, PRODUCES SEGMENTATION VIOLATION PROBABLY IN TrackerHitAssociator::associateHitId() IN quality_.evaluate()
-		// 		// qualityInformation(tracer_.simParticleTrail(), *iVertDaughter);
-				
+		
 		}
+
 		else {
 		}
 	
-	
-	// if (recoDaughterTotalWeight){
-	// 	for (unsigned int i = 0; i < flags_.size(); ++i)
-	// 		flags_[i] = flags_[i]/recoDaughterTotalWeight;
-	// 	BadMatchingWeight_ = BadMatchingWeight_/recoDaughterTotalWeight;
-	// 	BadTrackWeight_ = BadTrackWeight_/recoDaughterTotalWeight;
-	// }
-	
-	// std::cout << std::endl << std::endl << " ";
-	// for (unsigned int i = 0; i < flags_.size(); ++i)
-	// 	std::cout << Names[i] << ":\t" << flags_[i] << std::endl;
-	// std::cout << std::endl << " BadMatchingWeight: " << BadMatchingWeight_ << std::endl;
-	// std::cout << " BadTrackWeight: " << BadTrackWeight_ << std::endl;
-	// std::cout << std::endl;
-			
- //    return *this;
 }
 
 bool TrackCategorizer::isFinalstateParticle(const HepMC::GenParticle * p)
@@ -415,20 +293,6 @@ void TrackCategorizer::genPrimaryVertices()
 
             // Add the vertex barcodes to the new or existent vertices
             ientry->genVertex.push_back((*ivertex)->barcode());
-			
-			/// Look for close-by TVs to check their Event/BunchCrossing number
-// 			TrackingVertexCollection::const_iterator iTV = TVCollection->begin();
-// 			int TVindex = 0;
-// 			
-// 			for (; iTV != TVCollection->end(); ++iTV, ++TVindex){
-// 				double distance = sqrt( pow(pv.x - iTV->position().x(), 2) + pow(pv.y - iTV->position().y(), 2) + pow(pv.z - iTV->position().z(), 2) );
-// 				if ( distance < vertexClusteringSqDistance_ )
-// 					break;
-// 			}
-// 			
-// 			if (iTV != TVCollection->end())
-// 				std::cout << "TV close to Primary Vertex found! Event / BunchCrossing number / index: " << iTV->eventId().event() << " " << iTV->eventId().bunchCrossing() << " " << TVindex << std::endl;
-// 			else std::cout << "No TV close to Primary Vertex found!" << std::endl;
 
             // Collect final state descendants
             for (
@@ -458,50 +322,6 @@ void TrackCategorizer::genPrimaryVertices()
 
     std::sort(genpvs_.begin(), genpvs_.end());
 }
-
-
-/// MOD: ignore simToReco for now
-
-// TrackCategorizer const & TrackCategorizer::evaluate (TrackingVertexRef const & vertex)
-// {
-//     // Initializing the category vector
-//     reset();
-// 
-//     // Trace the history for the given TP
-//     tracer_.evaluate(vertex);
-// 
-//     // Check for a reconstructed track
-//     if ( tracer_.recoVertex().isNonnull() )
-//         flags_[Reconstructed] = true;
-//     else
-//         flags_[Reconstructed] = false;
-// 
-//     // Get all the information related to the simulation details
-//     simulationInformation();
-// 
-//     // Get all the information related to decay process
-//     processesAtGenerator();
-// 
-//     // Get information about conversion and other interactions
-//     processesAtSimulation();
-// 
-//     // Get geometrical information about the vertices
-//     vertexInformation();
-// 
-//     // Check for unkown classification
-//     unknownVertex();
-// 
-//     return *this;
-// }
-
-
-// void TrackCategorizer::simulationInformation()
-// {
-//     // Get the event id for the initial TP.
-//     EncodedEventId eventId = tracer_.simVertex()->eventId();
-//     // Check for signal events
-//     flags_[SignalEvent] = !eventId.bunchCrossing() && !eventId.event();
-// }
 
 
 bool TrackCategorizer::checkBInHistory(HistoryBase::GenParticleTrail const & genParticleTrail)
@@ -549,93 +369,6 @@ bool TrackCategorizer::checkBInHistory(HistoryBase::SimParticleTrail const & sim
 	
 	return false;
 }
-
-// // const double TrackCategorizer::weight(G4::Process processQuery) const
-// // {
-// //     const reco::VertexBaseRef & recoVertex = tracer_.recoVertex();
-// // 
-// //     const reco::RecoToSimCollection & trackRecoToSim = tracer_.trackRecoToSim();
-// // 
-// //     if (!recoVertex.isNonnull()) {return -1;}
-// // 
-// //     int recoDaughterCounter = 0;
-// //     double recoDaughterWeight = 0.;
-// //     double processWeight = 0.;
-// // 
-// //     for (reco::Vertex::trackRef_iterator iVertDaughter = recoVertex->tracks_begin(); iVertDaughter != recoVertex->tracks_end(); ++iVertDaughter)
-// //     {
-// //         recoDaughterCounter++;
-// // 
-// //         // TRACK QUALITY, WHERE TO GET FROM?? in original vertexAssociator is obtained from config ParameterSet which again is coming from the EventSetup upon initialisation of the vertexAssociator; maybe initialize vertexAssociator and then get trackQuality_ from there? but is private member...
-// //         // UPDATE: don't need because tracks have already been selected!!
-// //         //       if ( !(*iVertDaughter)->quality(trackQuality_) ) continue;
-// // 
-// //         recoDaughterWeight += recoVertex->trackWeight(*iVertDaughter);
-// // 
-// //         /// Check for association for the given RecoDaughter
-// //         if ( trackRecoToSim.numberOfAssociations(*iVertDaughter) > 0 )
-// //         {
-// //             const std::vector<std::pair<TrackingParticleRef,double> > & associations = trackRecoToSim[*iVertDaughter];
-// // 
-// //             std::map<double, TrackingParticleRef> associationsSorted;
-// //             for (unsigned int i=0; i < associations.size(); ++i)
-// //             {
-// //                 associationsSorted[associations[i].second] = associations[i].first;
-// //             }
-// // 
-// //             // Get a reference to parent vertex of TrackingParticle associated to the RecoDaughter
-// //             // TrackingVertexRef trackingVertex = associationsSorted.rbegin()->second->parentVertex();
-// //             // // Store matched RecoDaughter to the trackingVertex
-// //             // matches_[trackingVertex].first += recoVertex.trackWeight(*iVertDaughter);
-// //             // matches_[trackingVertex].second++;
-// // 
-// //             /// take only the first association with the highest quality
-// //             unsigned short process = 0;
-// // 
-// //             //! needs to be changed to associationsSorted.rbegin()->second->parentVertex()->pSimVertex_begin()->processType() in CMSSW_7!
-// // 
-// //             if(!associationsSorted.rbegin()->second->trackPSimHit().empty())
-// //             {
-// //                 process = associationsSorted.rbegin()->second->pSimHit_begin()->processType();
-// //             }
-// //             else
-// //             {}
-// // 
-// //             //! the entire following code needs to be rewritten in 7X as the process type numbering scheme has changed!
-// //             if (process == processQuery)
-// //             {
-// //                 processWeight += recoVertex->trackWeight(*iVertDaughter);
-// //             }
-// // 
-// //             //! ==========================================================================
-// //             //! add more features here to also be able to ask for other categories, i.e. isBWeak etc.
-// //             //! ==========================================================================
-// // 
-// //             //     if (process == G4::Hadronic) {Hadronic += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Unknown) {Unknown += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Undefined) {Undefined += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Decay) {Decay += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Primary) {GeantPrimary += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Compton) {Compton += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Annihilation) {Annihilation += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::EIoni) {EIoni += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::HIoni) {HIoni += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::MuIoni) {MuIoni += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Photon) {Photon += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::MuPairProd) {MuPairProd += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::EBrem) {EBrem += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::SynchrotronRadiation) {SynchrotronRadiation += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::MuBrem) {MuBrem += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::Conversions) {Conversions += recoVertex.trackWeight(*iVertDaughter);}
-// //             // if (process == G4::MuNucl) {MuNucl += recoVertex.trackWeight(*iVertDaughter);}
-// //         }
-// // 
-// //             //! TODO: include "NoProcess" weight in case 'if(!associationsSorted.rbegin()->second->trackPSimHit().empty())' fails or "NoAssociation" weight in case 'if ( trackRecoToSim_.numberOfAssociations(*iVertDaughter) > 0 )' fails or make a combined weight of these two
-// // 
-// //     }
-// // 
-// //     return processWeight;
-// // }
 
 
 int TrackCategorizer::vertexInformationDist(HistoryBase::GenParticleTrail const & genParticleTrail, HistoryBase::SimParticleTrail const & simParticleTrail) const
@@ -776,194 +509,6 @@ std::pair<double, double> TrackCategorizer::calcPull(reco::TrackBaseRef const & 
 	}
 }
 
-// void TrackCategorizer::qualityInformation(HistoryBase::SimParticleTrail const & spt, reco::TrackBaseRef const & track)
-// {
-// 	// run the hit-by-hit reconstruction quality analysis
-// 	std::cout << "TEST1" << std::endl;
-// 	quality_.evaluate(spt, track);
-// 	std::cout << "TEST2" << std::endl;
-	
-// 	unsigned int maxLayers = std::min(numberOfInnerLayers_, quality_.numberOfLayers());
-	
-// 	// check the innermost layers for bad hits
-// 	for (unsigned int i = 0; i < maxLayers; i++)
-// 	{
-// 		const TrackQuality::Layer &layer = quality_.layer(i);
-		
-// 		// check all hits in that layer
-// 		for (unsigned int j = 0; j < layer.hits.size(); j++)
-// 		{
-// 			const TrackQuality::Layer::Hit &hit = layer.hits[j];
-			
-// 			// In those cases the bad hit was used by track reconstruction
-// 			if (hit.state == TrackQuality::Layer::Noise ||
-// 				hit.state == TrackQuality::Layer::Misassoc)
-// 				BadInnerHits_ = true;
-// 			else if (hit.state == TrackQuality::Layer::Shared)
-// 				SharedInnerHits_ = true;
-// 		}
-// 	}
-// }
-
-// /* METHOD BELOW FROM VERTEX CLASSIFIER! Works somehow different (using vertex clusters, I don't really understand it) but apparently
-//  * yields the same result, i.e. whether it is primary/secondary/tertiary vertex...
-//  * => use vertexInformationDist!
-
-// int TrackCategorizer::vertexInformationClust()
-// {
-//     // Helper class for clusterization
-//     typedef std::multimap<double, HepMC::ThreeVector> Clusters;
-//     typedef std::pair<double, HepMC::ThreeVector> ClusterPair;
-
-//     Clusters clusters;
-
-//     // Get the main primary vertex from the list
-//     GeneratedPrimaryVertex const & genpv = genpvs_.back();
-
-//     // Get the generated history of the tracks
-//     HistoryBase::GenVertexTrail & genVertexTrail = const_cast<HistoryBase::GenVertexTrail &> (tracer_.genVertexTrail());
-
-//     // Unit transformation from mm to cm
-//     double const mm = 0.1;
-
-//     // Loop over the generated vertexes
-//     for (
-//         HistoryBase::GenVertexTrail::const_iterator ivertex = genVertexTrail.begin();
-//         ivertex != genVertexTrail.end();
-//         ++ivertex
-//     )
-//     {
-//         // Check vertex exist
-//         if (*ivertex)
-//         {
-//             // Measure the distance2 respecto the primary vertex
-//             HepMC::ThreeVector p = (*ivertex)->point3d();
-//             double distance = sqrt( pow(p.x() * mm - genpv.x, 2) + pow(p.y() * mm - genpv.y, 2) + pow(p.z() * mm - genpv.z, 2) );
-
-//             // If there is not any clusters add the first vertex.
-//             if ( clusters.empty() )
-//             {
-//                 clusters.insert( ClusterPair(distance, HepMC::ThreeVector(p.x() * mm, p.y() * mm, p.z() * mm)) );
-//                 continue;
-//             }
-
-//             // Check if there is already a cluster in the given distance from primary vertex
-//             Clusters::const_iterator icluster = clusters.lower_bound(distance - vertexClusteringSqDistance_);
-
-//             if ( icluster == clusters.upper_bound(distance + vertexClusteringSqDistance_) )
-//             {
-//                 clusters.insert ( ClusterPair(distance, HepMC::ThreeVector(p.x() * mm, p.y() * mm, p.z() * mm)) );
-//                 continue;
-//             }
-
-//             bool cluster = false;
-
-//             // Looping over the vertex clusters of a given distance from primary vertex
-//             for (;
-//                     icluster != clusters.upper_bound(distance + vertexClusteringSqDistance_);
-//                     ++icluster
-//                 )
-//             {
-//                 double difference = sqrt (
-//                                         pow(p.x() * mm - icluster->second.x(), 2) +
-//                                         pow(p.y() * mm - icluster->second.y(), 2) +
-//                                         pow(p.z() * mm - icluster->second.z(), 2)
-//                                     );
-
-//                 if ( difference < vertexClusteringSqDistance_ )
-//                 {
-//                     cluster = true;
-//                     break;
-//                 }
-//             }
-
-//             if (!cluster) clusters.insert ( ClusterPair(distance, HepMC::ThreeVector(p.x() * mm, p.y() * mm, p.z() * mm)) );
-//         }
-//     }
-
-//     HistoryBase::SimVertexTrail & simVertexTrail = const_cast<HistoryBase::SimVertexTrail &> (tracer_.simVertexTrail());
-
-//     // Loop over the generated particles
-//     for (
-//         HistoryBase::SimVertexTrail::const_reverse_iterator ivertex = simVertexTrail.rbegin();
-//         ivertex != simVertexTrail.rend();
-//         ++ivertex
-//     )
-//     {
-//         // Look for those with production vertex
-//         TrackingVertex::LorentzVector p = (*ivertex)->position();
-
-//         double distance = sqrt( pow(p.x() - genpv.x, 2) + pow(p.y() - genpv.y, 2) + pow(p.z() - genpv.z, 2) );
-
-//         // If there is not any clusters add the first vertex.
-//         if ( clusters.empty() )
-//         {
-//             clusters.insert( ClusterPair(distance, HepMC::ThreeVector(p.x(), p.y(), p.z())) );
-//             continue;
-//         }
-
-//         // Check if there is already a cluster in the given distance from primary vertex
-//         Clusters::const_iterator icluster = clusters.lower_bound(distance - vertexClusteringSqDistance_);
-
-//         if ( icluster == clusters.upper_bound(distance + vertexClusteringSqDistance_) )
-//         {
-//             clusters.insert ( ClusterPair(distance, HepMC::ThreeVector(p.x(), p.y(), p.z())) );
-//             continue;
-//         }
-
-//         bool cluster = false;
-
-//         // Looping over the vertex clusters of a given distance from primary vertex
-//         for (;
-//                 icluster != clusters.upper_bound(distance + vertexClusteringSqDistance_);
-//                 ++icluster
-//             )
-//         {
-//             double difference = sqrt (
-//                                     pow(p.x() - icluster->second.x(), 2) +
-//                                     pow(p.y() - icluster->second.y(), 2) +
-//                                     pow(p.z() - icluster->second.z(), 2)
-//                                 );
-
-//             if ( difference < vertexClusteringSqDistance_ )
-//             {
-//                 cluster = true;
-//                 break;
-//             }
-//         }
-
-//         if (!cluster) clusters.insert ( ClusterPair(distance, HepMC::ThreeVector(p.x(), p.y(), p.z())) );
-//     }
-
-//     if ( clusters.size() == 1 )
-//         return 1;
-//     else if ( clusters.size() == 2 )
-//         return 2;
-//     else
-//         return 3;
-// }
-
-// //*/
-
-
-// bool TrackCategorizer::isFinalstateParticle(const HepMC::GenParticle * p)
-// {
-//     return !p->end_vertex() && p->status() == 1;
-// }
-
-
-// bool TrackCategorizer::isCharged(const HepMC::GenParticle * p)
-// {
-//     const ParticleData * part = particleDataTable_->particle( p->pdg_id() );
-//     if (part)
-//         return part->charge()!=0;
-//     else
-//     {
-//         // the new/improved particle table doesn't know anti-particles
-//         return  particleDataTable_->particle( -p->pdg_id() ) != 0;
-//     }
-// }
-
 
 TrackingParticleRef TrackCategorizer::getSourceTrack(TrackingVertexRef const & evaluatedVertex) const
 {
@@ -991,6 +536,7 @@ TrackingParticleRef TrackCategorizer::getSourceTrack(TrackingVertexRef const & e
 	
 	return output;
 }
+
 
 int TrackCategorizer::getLongLivedGenParticle(TrackingVertexRef const & tv) const {
 	
