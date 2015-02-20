@@ -9,11 +9,12 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 
-#include "SimTracker/TrackAssociation/interface/TrackAssociatorBase.h"
+// #include "SimTracker/TrackAssociation/interface/TrackAssociatorBase.h"
 
 
-struct TrackMCInformation
+class TrackMCInformation
 {
+public:
 
 	// TrackMCInformation(edm::ParameterSet const & pSet) : quality(pSet) {}
 
@@ -69,8 +70,9 @@ struct TrackMCInformation
 
 
 
-struct VertexMCInformation
+class VertexMCInformation
 {
+public:
 	edm::RefToBase<reco::VertexCompositePtrCandidate> vertexRef;
 
 	edm::RefToBaseVector<reco::Track> daughterTracks;

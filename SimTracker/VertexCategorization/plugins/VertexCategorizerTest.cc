@@ -103,13 +103,13 @@ VertexCategorizerTest::VertexCategorizerTest(const edm::ParameterSet& config) :
     geantProcessTypes = fs->make<TH1F>("GeantTypes", "Geant Process Types", 300, -0.5, 300 - 0.5);
     cmsProcessTypes = fs->make<TH1F>("CMSTypes", "CMS Process Types", 300, -0.5, 300 - 0.5);
     bRhoTight = fs->make<TH1F>("bRhoTight", "B Rho (Tight)", 240, 0., 12.);
-    bRhoTight = fs->make<TH1F>("bRhoTight", "B Rho (Tight)", 240, 0., 12.);
-    bRhoTight = fs->make<TH1F>("bRhoTight", "B Rho (Tight)", 240, 0., 12.);
+    bRhoMed = fs->make<TH1F>("bRhoMed", "B Rho (Med)", 240, 0., 12.);
+    bRhoLoose = fs->make<TH1F>("bRhoLoose", "B Rho (Loose)", 240, 0., 12.);
     niRhoTight = fs->make<TH1F>("niRhoTight", "NI Rho (Tight)", 240, 0., 12.);
-    niRhoTight = fs->make<TH1F>("niRhoTight", "NI Rho (Tight)", 240, 0., 12.);
-    niRhoTight = fs->make<TH1F>("niRhoTight", "NI Rho (Tight)", 240, 0., 12.);
-    bRho2D = fs->make<TH2F>("bRho2D", ";Vertex Rho;b fraction", 240, 0., 12., 130, 0., 13.);
-    niRho2D = fs->make<TH2F>("niRho2D", ";Vertex Rho;ni fraction", 240, 0., 12., 130, 0., 13.);
+    niRhoMed = fs->make<TH1F>("niRhoMed", "NI Rho (Med)", 240, 0., 12.);
+    niRhoLoose = fs->make<TH1F>("niRhoLoose", "NI Rho (Loose)", 240, 0., 12.);
+    bRho2D = fs->make<TH2F>("bRho2D", ";Vertex Rho;b fraction", 240, 0., 12., 130, 0., 1.3);
+    niRho2D = fs->make<TH2F>("niRho2D", ";Vertex Rho;ni fraction", 240, 0., 12., 130, 0., 1.3);
 
 
 
@@ -159,16 +159,16 @@ void VertexCategorizerTest::analyze(const edm::Event& event, const edm::EventSet
         if (b_frac > 0.9)
             bRhoTight->Fill(vertRho);
         else if (b_frac > 0.5)
-            bRhoTight->Fill(vertRho);
+            bRhoMed->Fill(vertRho);
         else if (b_frac > 0.1)
-            bRhoTight->Fill(vertRho);
+            bRhoLoose->Fill(vertRho);
 
         if (ni_frac > 0.9)
             niRhoTight->Fill(vertRho);
         else if (ni_frac > 0.5)
-            niRhoTight->Fill(vertRho);
+            niRhoMed->Fill(vertRho);
         else if (ni_frac > 0.1)
-            niRhoTight->Fill(vertRho);
+            niRhoLoose->Fill(vertRho);
 
         bRho2D->Fill(vertRho, b_frac);
         niRho2D->Fill(vertRho, ni_frac);

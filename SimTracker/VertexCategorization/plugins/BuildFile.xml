@@ -6,5 +6,5 @@
 <use   name="CommonTools/UtilAlgos"/>
 <use   name="CommonTools/Utils"/>
 <flags CXXFLAGS="-g" />
-<library   file="VertexCategorizerTest.cc" name="VertexCategorizationPlugins">
+<library   file="VertexCategorizerTest.cc VertexCategorizerProducer.cc" name="VertexCategorizationPlugins">
 </library>

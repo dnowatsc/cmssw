@@ -25,7 +25,7 @@
 #include "SimTracker/VertexCategorization/interface/TrackCategorizer.h"
 
 int VertexCategorizer::vertexCount = 0;
-bool VertexCategorizer::messageOutput = false;
+bool VertexCategorizer::messageOutput = true;
 
 // ostream& OutputController::operator<< (ostream& os)
 // {
